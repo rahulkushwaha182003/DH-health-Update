@@ -12,7 +12,6 @@ import WhyChooseSection from "@/components/home/WhyChooseSection";
 import AboutPreview from "@/components/home/AboutPreview";
 import CTASection from "@/components/home/CTASection";
 import HomeSlider from "@/components/home/HomeSlider";
-import HeroBanner from "@/components/home/HeroBanner";
 import { Droplet, Award, Zap, GitCompare } from "lucide-react";
 
 const Index = () => {

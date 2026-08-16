@@ -8,11 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, Loader2, ArrowLeft, Instagram, MessageCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/diagnostics-hub-logo.png";
-
-const WHATSAPP_NUMBER = "917649885936";
-const INSTAGRAM_URL = "https://www.instagram.com/diagnostics_hub?igsh=MzNzanJpN2tlODhs";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -36,6 +33,11 @@ const AuthPage = () => {
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [showResetNewPassword, setShowResetNewPassword] = useState(false);
+  const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
 
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
@@ -162,17 +164,65 @@ const AuthPage = () => {
     }
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail);
       if (error) {
         toast({ title: "Reset Failed", description: error.message, variant: "destructive" });
       } else {
         setResetSent(true);
-        toast({ title: "Reset Link Sent!", description: "Check your email for the password reset link." });
+        toast({ title: "Verification Code Sent!", description: "Check your email for the password reset code." });
       }
     } catch {
       toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyAndReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || !resetNewPassword || !resetConfirmPassword) {
+      toast({ title: "Fields Required", description: "Please fill in all fields.", variant: "destructive" });
+      return;
+    }
+
+    if (resetNewPassword !== resetConfirmPassword) {
+      toast({ title: "Passwords Don't Match", description: "Passwords do not match.", variant: "destructive" });
+      return;
+    }
+
+    if (resetNewPassword.length < 6) {
+      toast({ title: "Password Too Short", description: "Password must be at least 6 characters.", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Step 1: Verify the OTP code
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: resetEmail,
+        token: otpCode,
+        type: 'recovery'
+      });
+
+      if (verifyError) {
+        toast({ title: "Invalid Code", description: verifyError.message, variant: "destructive" });
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 2: Update the user's password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: resetNewPassword
+      });
+
+      if (updateError) {
+        toast({ title: "Update Failed", description: updateError.message, variant: "destructive" });
+      } else {
+        toast({ title: "Success!", description: "Your password has been reset successfully. You are now logged in." });
+        navigate(redirectTo);
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "An unexpected error occurred.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +232,11 @@ const AuthPage = () => {
     setShowResetForm(false);
     setResetSent(false);
     setResetEmail("");
+    setOtpCode("");
+    setResetNewPassword("");
+    setResetConfirmPassword("");
   };
+
   if (showResetForm) {
     return (
       <Layout>
@@ -198,34 +252,98 @@ const AuthPage = () => {
                 <CardTitle className="text-xl md:text-2xl">Reset Password</CardTitle>
                 <CardDescription>
                   {resetSent 
-                    ? "Check your email for the reset link" 
-                    : "Enter your email to receive a password reset link"}
+                    ? "Enter the 6-digit verification code and your new password" 
+                    : "Enter your email to receive a password reset code"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {resetSent ? (
-                  <div className="text-center space-y-4">
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                      <CheckCircle2 className="h-8 w-8 text-primary" />
+                  <form onSubmit={handleVerifyAndReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="otp-code">Verification Code (6-digit)</Label>
+                      <Input
+                        id="otp-code"
+                        type="text"
+                        placeholder="123456"
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        required
+                        className="text-center tracking-widest text-lg font-bold"
+                      />
                     </div>
-                    <div className="p-4 bg-primary/5 rounded-lg">
-                      <p className="font-medium text-foreground">Reset link sent!</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        We've sent a password reset link to <strong>{resetEmail}</strong>
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Click the link in your email to set a new password. Check your spam folder if you don't see it.
-                      </p>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-new-password">New Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="reset-new-password"
+                          type={showResetNewPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="pl-10 pr-10"
+                          value={resetNewPassword}
+                          onChange={(e) => setResetNewPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowResetNewPassword(!showResetNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
+                        >
+                          {showResetNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={resetForgotPassword}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back to Login
+
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-confirm-password">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="reset-confirm-password"
+                          type={showResetConfirmPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="pl-10 pr-10"
+                          value={resetConfirmPassword}
+                          onChange={(e) => setResetConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowResetConfirmPassword(!showResetConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
+                        >
+                          {showResetConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Resetting...</>
+                      ) : (
+                        "Reset Password"
+                      )}
                     </Button>
-                  </div>
+                    <Button type="button" variant="ghost" className="w-full" onClick={resetForgotPassword}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />Back to Login
+                    </Button>
+
+                    <div className="text-center pt-2 border-t text-xs text-muted-foreground">
+                      <p>If you don't receive the email code, contact support at</p>
+                      <a href="tel:+917649885936" className="font-bold text-primary hover:underline">+91 7649885936</a>
+                      <p>to reset your password instantly.</p>
+                    </div>
+                  </form>
                 ) : (
                   <form onSubmit={handlePasswordReset} className="space-y-4">
                     <div className="space-y-2">
@@ -247,12 +365,18 @@ const AuthPage = () => {
                       {isLoading ? (
                         <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
                       ) : (
-                        <><Mail className="h-4 w-4 mr-2" />Send Reset Link</>
+                        <><Mail className="h-4 w-4 mr-2" />Send Reset Code</>
                       )}
                     </Button>
                     <Button type="button" variant="ghost" className="w-full" onClick={resetForgotPassword}>
                       <ArrowLeft className="h-4 w-4 mr-2" />Back to Login
                     </Button>
+
+                    <div className="text-center pt-2 border-t text-xs text-muted-foreground">
+                      <p>If you don't receive the email code, contact support at</p>
+                      <a href="tel:+917649885936" className="font-bold text-primary hover:underline">+91 7649885936</a>
+                      <p>to reset your password instantly.</p>
+                    </div>
                   </form>
                 )}
               </CardContent>
@@ -278,27 +402,6 @@ const AuthPage = () => {
               <CardDescription className="text-sm">
                 Access your appointments, test results, and health records
               </CardDescription>
-              {/* Social Links */}
-              <div className="flex justify-center gap-3 pt-3">
-                <a
-                  href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-success hover:bg-success/90 flex items-center justify-center text-success-foreground transition-all hover:scale-105"
-                  title="WhatsApp"
-                >
-                  <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                </a>
-                <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:opacity-90 flex items-center justify-center text-white transition-all hover:scale-105"
-                  title="Instagram"
-                >
-                  <Instagram className="h-4 w-4 sm:h-5 sm:w-5" />
-                </a>
-              </div>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="login" className="w-full">

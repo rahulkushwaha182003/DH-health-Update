@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -53,11 +54,35 @@ const allTestCatalogs = [
   ...bharatTests as any[]
 ];
 
-const getTestPrice = (name: string): number => {
+const getTestPrice = (name: string, labName?: string): number => {
   const normalizedName = name.trim().toUpperCase();
   const searchName = normalizedName.split(' [')[0].trim(); // Remove lab suffix if present
+  
+  // If lab name is provided, search in that lab's catalog first
+  if (labName) {
+    let labCatalog: any[] = [];
+    if (labName.includes("Dr. Lal")) labCatalog = drLalTests as any[];
+    else if (labName.includes("Metropolis")) labCatalog = metropolisTests as any[];
+    else if (labName.includes("Pathkind")) labCatalog = pathkindTests as any[];
+    else if (labName.includes("Bharat")) labCatalog = bharatTests as any[];
+    else labCatalog = labTests as any[];
+    
+    const foundInLab = labCatalog.find(t => t.name.trim().toUpperCase() === searchName);
+    if (foundInLab) return foundInLab.discountPrice !== undefined ? foundInLab.discountPrice : foundInLab.price;
+  }
+  
+  // Fallback to search all catalogs
   const found = allTestCatalogs.find(t => t.name.trim().toUpperCase() === searchName);
   return found?.price || 0;
+};
+
+const getTestMrp = (name: string, labName?: string): number => {
+  const normalizedName = name.trim().toUpperCase();
+  const searchName = normalizedName.split(' [')[0].trim(); // Remove lab suffix if present
+  
+  // Only look up explicit MRP (which is only defined for DH health packages)
+  const found = allTestCatalogs.find(t => t.name.trim().toUpperCase() === searchName);
+  return found?.mrp || 0;
 };
 
 /* ─── Prescription Viewer Component ─── */
@@ -168,6 +193,10 @@ const AdminPage = () => {
   const [savingBilling, setSavingBilling] = useState(false);
   const [selectedAppointmentIds, setSelectedAppointmentIds] = useState<string[]>([]);
   const [selectedBookingIds, setSelectedBookingIds] = useState<string[]>([]);
+  const [resetPassOpen, setResetPassOpen] = useState(false);
+  const [resetPassUser, setResetPassUser] = useState<any>(null);
+  const [resetNewPass, setResetNewPass] = useState("");
+  const [isResettingPass, setIsResettingPass] = useState(false);
 
   useEffect(() => {
     if (isAdmin) fetchData();
@@ -193,9 +222,9 @@ const AdminPage = () => {
       if (bookingsErr) console.error("Bookings error:", bookingsErr);
       if (profilesErr) console.error("Profiles error:", profilesErr);
 
-      setAppointments(appts || []);
+      setAppointments((appts || []).filter(a => !a.admin_notes?.includes("[DeletedByAdmin: true]")));
       setInquiries(inqs || []);
-      setTestBookings(bookings || []);
+      setTestBookings((bookings || []).filter(b => !b.notes?.includes("[DeletedByAdmin: true]")));
       setUsers(profilesData || []);
     } catch (error) {
       console.error("Fetch error:", error);
@@ -254,7 +283,14 @@ const AdminPage = () => {
     if (!window.confirm("Are you sure you want to delete this booked test?")) return;
     
     try {
-      const { error } = await supabase.from("appointments").delete().eq("id", id);
+      const apt = appointments.find(a => a.id === id);
+      const currentAdminNotes = apt?.admin_notes || "";
+      const updatedNotes = `${currentAdminNotes} [DeletedByAdmin: true]`.trim();
+
+      const { error } = await supabase.from("appointments").update({
+        admin_notes: updatedNotes
+      }).eq("id", id);
+
       if (error) throw error;
       
       toast({ title: "Deleted", description: "Booked test has been deleted." });
@@ -269,7 +305,14 @@ const AdminPage = () => {
     if (!window.confirm("Are you sure you want to delete this test booking?")) return;
     
     try {
-      const { error } = await supabase.from("test_bookings").delete().eq("id", id);
+      const bk = testBookings.find(b => b.id === id);
+      const currentNotes = bk?.notes || "";
+      const updatedNotes = `${currentNotes} [DeletedByAdmin: true]`.trim();
+
+      const { error } = await supabase.from("test_bookings").update({
+        notes: updatedNotes
+      }).eq("id", id);
+
       if (error) throw error;
       
       toast({ title: "Deleted", description: "Test booking has been deleted." });
@@ -317,7 +360,15 @@ const AdminPage = () => {
     if (!window.confirm(`Are you sure you want to delete the ${selectedAppointmentIds.length} selected booked tests?`)) return;
 
     try {
-      const { error } = await supabase.from("appointments").delete().in("id", selectedAppointmentIds);
+      const promises = selectedAppointmentIds.map(async (id) => {
+        const apt = appointments.find(a => a.id === id);
+        const currentAdminNotes = apt?.admin_notes || "";
+        const updatedNotes = `${currentAdminNotes} [DeletedByAdmin: true]`.trim();
+        return supabase.from("appointments").update({ admin_notes: updatedNotes }).eq("id", id);
+      });
+
+      const results = await Promise.all(promises);
+      const error = results.find(r => r.error)?.error;
       if (error) throw error;
 
       toast({ title: "Deleted", description: `${selectedAppointmentIds.length} booked tests have been deleted.` });
@@ -333,7 +384,15 @@ const AdminPage = () => {
     if (!window.confirm(`Are you sure you want to delete the ${selectedBookingIds.length} selected test bookings?`)) return;
 
     try {
-      const { error } = await supabase.from("test_bookings").delete().in("id", selectedBookingIds);
+      const promises = selectedBookingIds.map(async (id) => {
+        const bk = testBookings.find(b => b.id === id);
+        const currentNotes = bk?.notes || "";
+        const updatedNotes = `${currentNotes} [DeletedByAdmin: true]`.trim();
+        return supabase.from("test_bookings").update({ notes: updatedNotes }).eq("id", id);
+      });
+
+      const results = await Promise.all(promises);
+      const error = results.find(r => r.error)?.error;
       if (error) throw error;
 
       toast({ title: "Deleted", description: `${selectedBookingIds.length} test bookings have been deleted.` });
@@ -341,6 +400,33 @@ const AdminPage = () => {
       fetchData();
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to delete test bookings", variant: "destructive" });
+    }
+  };
+
+  const handleAdminResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetPassUser || !resetNewPass) return;
+    if (resetNewPass.length < 6) {
+      toast({ title: "Validation Error", description: "Password must be at least 6 characters.", variant: "destructive" });
+      return;
+    }
+    setIsResettingPass(true);
+    try {
+      const { error } = await supabase.rpc('admin_reset_user_password', {
+        target_user_id: resetPassUser.id,
+        new_plain_password: resetNewPass
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Success", description: `Password for ${resetPassUser.first_name || 'user'} has been updated.` });
+      setResetPassOpen(false);
+      setResetNewPass("");
+      setResetPassUser(null);
+    } catch (err: any) {
+      toast({ title: "Reset Failed", description: err.message || "Failed to reset password. Please verify if the SQL function has been created in your Supabase Dashboard.", variant: "destructive" });
+    } finally {
+      setIsResettingPass(false);
     }
   };
 
@@ -414,7 +500,8 @@ const AdminPage = () => {
     const discount = discountMatch ? parseInt(discountMatch[1]) : 0;
 
     const testsList = isAppt ? item.test_type.split(' [')[0].split('|').map((t: string) => t.trim()).filter((t: string) => t !== "") : [item.test_name];
-    const individualPrices = testsList.map((t: string) => getTestPrice(t));
+    const individualPrices = testsList.map((t: string) => getTestPrice(t, extractedLabName));
+    const individualMrps = testsList.map((t: string) => getTestMrp(t, extractedLabName));
 
     const data = {
       referenceNumber: item.reference_number,
@@ -432,6 +519,7 @@ const AdminPage = () => {
       appointmentDate: new Date(isAppt ? item.appointment_date : item.preferred_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
       appointmentTime: isAppt ? item.time_slot : (item.preferred_time || "N/A"),
       individualPrices: individualPrices,
+      individualMrps: individualMrps,
     };
 
     await generateReceipt(data);
@@ -1121,12 +1209,13 @@ const AdminPage = () => {
                   <TableHead>Phone</TableHead>
                   <TableHead>Address</TableHead>
                   <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -1140,6 +1229,18 @@ const AdminPage = () => {
                       <TableCell>{u.phone || 'N/A'}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{u.address || 'N/A'}</TableCell>
                       <TableCell>{new Date(u.created_at).toLocaleDateString('en-IN')}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setResetPassUser(u);
+                            setResetPassOpen(true);
+                          }}
+                        >
+                          Reset Password
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -1205,8 +1306,7 @@ const AdminPage = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Sample Collection</p>
                   <p>{selectedItem.sample_collection}</p>
-                </div>
-                <div className="sm:col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
+                </div>                <div className="sm:col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
                   <div className="flex items-center justify-between mb-3 border-b border-slate-200 pb-2">
                     <p className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                       <TestTube2 className="h-4 w-4 text-primary" /> Booked Tests Summary
@@ -1228,22 +1328,39 @@ const AdminPage = () => {
                       <tbody className="divide-y divide-slate-100">
                         {(() => {
                           const testsList = selectedItem.test_type.split(' [')[0].split('|').map(t => t.trim()).filter(t => t !== "");
-                          const total = testsList.reduce((acc, t) => acc + getTestPrice(t), 0);
+                          const labMatch = selectedItem.test_type?.match(/\[(.*?)\]/);
+                          const extractedLabName = labMatch ? labMatch[1] : null;
+                          const totalMrp = testsList.reduce((acc, t) => acc + getTestMrp(t, extractedLabName), 0);
+                          const totalOffer = testsList.reduce((acc, t) => acc + getTestPrice(t, extractedLabName), 0);
                           return (
                             <>
                               {testsList.map((test, index) => {
-                                const price = getTestPrice(test);
+                                const labMatch = selectedItem.test_type?.match(/\[(.*?)\]/);
+                                const extractedLabName = labMatch ? labMatch[1] : null;
+                                const mrp = getTestMrp(test, extractedLabName);
+                                const price = getTestPrice(test, extractedLabName);
+                                const hasDiscount = mrp > 0 && mrp !== price;
                                 return (
                                   <tr key={index} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-3 py-2.5 font-bold text-primary border-r border-slate-100 text-center">{index + 1}</td>
                                     <td className="px-3 py-2.5 font-medium text-slate-700">{test}</td>
-                                    <td className="px-3 py-2.5 font-bold text-slate-900 text-right">{formatINR(price)}</td>
+                                    <td className="px-3 py-2.5 text-right">
+                                      {hasDiscount && (
+                                        <span className="font-semibold text-slate-400 line-through mr-2">{formatINR(mrp)}</span>
+                                      )}
+                                      <span className="font-bold text-slate-900">{formatINR(price)}</span>
+                                    </td>
                                   </tr>
                                 );
                               })}
                               <tr className="bg-slate-50 font-bold border-t-2 border-slate-200">
                                 <td colSpan={2} className="px-3 py-3 text-slate-700 text-right">Total Tests Cost:</td>
-                                <td className="px-3 py-3 text-primary text-right text-base">{formatINR(total)}</td>
+                                <td className="px-3 py-3 text-right">
+                                  {totalMrp > totalOffer && (
+                                    <span className="font-semibold text-slate-400 line-through mr-2">{formatINR(totalMrp)}</span>
+                                  )}
+                                  <span className="text-primary text-base">{formatINR(totalOffer)}</span>
+                                </td>
                               </tr>
                             </>
                           );
@@ -1510,6 +1627,41 @@ const AdminPage = () => {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin Reset Password Dialog */}
+      <Dialog open={resetPassOpen} onOpenChange={setResetPassOpen}>
+        <DialogContent className="max-w-md w-[95vw] sm:w-full">
+          <DialogHeader>
+            <DialogTitle>Reset User Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for {resetPassUser?.first_name || ''} {resetPassUser?.last_name || ''} ({resetPassUser?.email || ''}).
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAdminResetPassword} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="admin-new-password">New Password</Label>
+              <Input
+                id="admin-new-password"
+                type="text"
+                placeholder="Enter new password (min 6 characters)"
+                value={resetNewPass}
+                onChange={(e) => setResetNewPass(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setResetPassOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isResettingPass}>
+                {isResettingPass && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Update Password
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </AdminLayout>

@@ -22,6 +22,7 @@ import AdminLoginPage from "./pages/AdminLoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import CartPage from "./pages/CartPage";
+import HealthPackagesPage from "./pages/HealthPackagesPage";
 import { CartProvider } from "./context/CartContext";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin-login" element={<AdminLoginPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/health-packages" element={<HealthPackagesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -21,6 +21,7 @@ export interface ReceiptData {
   appointmentDate: string;
   appointmentTime: string;
   individualPrices?: number[];
+  individualMrps?: number[];
 }
 
 export const generateReceipt = async (data: ReceiptData) => {
@@ -177,10 +178,31 @@ export const generateReceipt = async (data: ReceiptData) => {
     const individualPrice = data.individualPrices && data.individualPrices[i] !== undefined
       ? data.individualPrices[i] : data.testPrice;
 
+    const individualMrp = data.individualMrps && data.individualMrps[i] !== undefined
+      ? data.individualMrps[i] : individualPrice;
+
     doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(0, 0, 0);
     doc.text(`${i + 1}`, margin + 4, currentY + 6);
-    doc.text(t.trim().substring(0, 60), margin + 12, currentY + 6);
-    doc.text((data.labName || "Partner Lab").substring(0, 30), margin + 110, currentY + 6);
+    doc.text(t.trim().substring(0, 50), margin + 12, currentY + 6);
+    doc.text((data.labName || "Partner Lab").substring(0, 25), margin + 110, currentY + 6);
+    
+    // Draw MRP (Strike-through) only if there is a discount
+    const hasDiscount = individualMrp > 0 && individualMrp !== individualPrice;
+    if (hasDiscount) {
+      const mrpText = `Rs. ${individualMrp.toLocaleString('en-IN')}`;
+      doc.setTextColor(120, 120, 120);
+      doc.text(mrpText, pageWidth - margin - 35, currentY + 6, { align: "right" });
+      
+      const textWidth = doc.getTextWidth(mrpText);
+      const startX = (pageWidth - margin - 35) - textWidth;
+      const endX = pageWidth - margin - 35;
+      doc.setDrawColor(150, 150, 150);
+      doc.setLineWidth(0.2);
+      doc.line(startX, currentY + 4.8, endX, currentY + 4.8);
+    }
+
+    // Draw Offer/Final Price
+    doc.setTextColor(0, 0, 0);
     doc.text(`Rs. ${individualPrice.toLocaleString('en-IN')}`, pageWidth - margin - 4, currentY + 6, { align: "right" });
     
     doc.setDrawColor(235, 240, 250); doc.setLineWidth(0.1);
@@ -198,10 +220,34 @@ export const generateReceipt = async (data: ReceiptData) => {
   currentY += 10;
   const summaryX = pageWidth - margin - 75;
   const amountX = pageWidth - margin;
+  
+  const totalMrp = data.individualMrps && data.individualMrps.length > 0
+    ? data.individualMrps.reduce((acc, val) => acc + val, 0)
+    : data.testPrice;
+
   doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(80, 80, 80);
-  doc.text("Tests Base Price:", summaryX, currentY);
-  doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
-  doc.text(`Rs. ${data.testPrice.toLocaleString('en-IN')}`, amountX, currentY, { align: "right" });
+  
+  if (totalMrp > data.testPrice) {
+    doc.text("Total Tests MRP:", summaryX, currentY);
+    doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+    doc.text(`Rs. ${totalMrp.toLocaleString('en-IN')}`, amountX, currentY, { align: "right" });
+    
+    currentY += 7.5;
+    doc.setFont("helvetica", "normal"); doc.setTextColor(80, 80, 80);
+    doc.text("Package Discount:", summaryX, currentY);
+    doc.setFont("helvetica", "bold"); doc.setTextColor(30, 120, 30);
+    doc.text(`- Rs. ${(totalMrp - data.testPrice).toLocaleString('en-IN')}`, amountX, currentY, { align: "right" });
+    
+    currentY += 7.5;
+    doc.setFont("helvetica", "normal"); doc.setTextColor(80, 80, 80);
+    doc.text("Tests Offer Price:", summaryX, currentY);
+    doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+    doc.text(`Rs. ${data.testPrice.toLocaleString('en-IN')}`, amountX, currentY, { align: "right" });
+  } else {
+    doc.text("Tests Base Price:", summaryX, currentY);
+    doc.setFont("helvetica", "bold"); doc.setTextColor(0, 0, 0);
+    doc.text(`Rs. ${data.testPrice.toLocaleString('en-IN')}`, amountX, currentY, { align: "right" });
+  }
 
   currentY += 7.5;
   doc.setFont("helvetica", "normal"); doc.setTextColor(80, 80, 80);

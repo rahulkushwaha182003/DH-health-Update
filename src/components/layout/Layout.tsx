@@ -4,6 +4,7 @@ import { FlaskConical, Microscope } from "lucide-react";
 import Header from "./Header";
 import Footer from "./Footer";
 import WhatsAppWidget from "../ui/WhatsAppWidget";
+import CartStickyBanner from "../ui/CartStickyBanner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -84,7 +85,8 @@ const Layout = ({ children }: LayoutProps) => {
       </main>
 
       <Footer />
-      <WhatsAppWidget />
+      {location.pathname !== "/book-appointment" && <WhatsAppWidget />}
+      {location.pathname !== "/book-appointment" && <CartStickyBanner />}
     </div>
   );
 };

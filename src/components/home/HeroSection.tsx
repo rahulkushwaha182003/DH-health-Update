@@ -43,9 +43,9 @@ const HeroSection = () => {
 
             {/* Gradient Headline */}
             <h1 className="text-[clamp(2.25rem,6vw,4.5rem)] font-extrabold text-[#002B54] leading-[1.1] mb-6 tracking-tight drop-shadow-sm text-balance">
-              Accurate Diagnostics for{" "}
+              Book Blood Tests Across{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#004A99] via-[#0066CC] to-[#38BDF8]">
-                Better Health
+                Madhya Pradesh
               </span>
             </h1>
 

@@ -63,6 +63,7 @@ const Header = () => {
     { name: "Home", path: "/" },
     { name: "Services", path: "/services" },
     { name: "Tests", path: "/tests" },
+    { name: "DH Health Packages", path: "/health-packages" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
     { name: "Help", path: "/help" },
@@ -108,35 +109,37 @@ const Header = () => {
       {/* Main Navigation */}
       <div className="container py-3 sm:py-4 px-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3">
-            <img 
-              src={logo} 
-              alt="Diagnostics Hub Logo" 
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover shadow-sm"
-              loading="eager"
-              decoding="async"
-              width={48}
-              height={48}
-            />
-            <div>
-              <h1 className="text-base sm:text-xl font-bold text-foreground leading-tight">Diagnostics Hub</h1>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Your Health Partner</p>
-            </div>
-          </Link>
+          <div className="flex items-center gap-8 xl:gap-12">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 sm:gap-3">
+              <img 
+                src={logo} 
+                alt="Diagnostics Hub Logo" 
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover shadow-sm"
+                loading="eager"
+                decoding="async"
+                width={48}
+                height={48}
+              />
+              <div>
+                <div className="text-base sm:text-xl font-bold text-foreground leading-tight">Diagnostics Hub</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Your Health Partner</p>
+              </div>
+            </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className="text-foreground hover:text-primary font-medium transition-colors text-sm xl:text-base"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </nav>
+            {/* Desktop Navigation - Positioned Left next to Logo */}
+            <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="text-foreground hover:text-primary font-medium transition-colors text-sm xl:text-base whitespace-nowrap"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-2">
@@ -209,6 +212,12 @@ const Header = () => {
                     description = "500+ Pathology & Radiology tests";
                     iconColors = "bg-emerald-50 text-emerald-600";
                     badge = "Popular";
+                    break;
+                  case "DH Health Packages":
+                    IconComponent = FlaskConical;
+                    description = "Affordable health checkup packages";
+                    iconColors = "bg-purple-50 text-purple-600";
+                    badge = "Best Value";
                     break;
                   case "About":
                     IconComponent = Info;

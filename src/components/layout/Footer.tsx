@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Clock, MessageCircle, Send, Instagram, Users, Youtube, Linkedin } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, MessageCircle, Twitter, Instagram, Users, Youtube, Linkedin } from "lucide-react";
 import logo from "@/assets/diagnostics-hub-logo.png";
 
 const WHATSAPP_NUMBER = "917649885936";
 const WHATSAPP_GROUP = "https://chat.whatsapp.com/LCTbVSvUDGDE311fwvTYvT?s=cl&p=a&ilr=1&amv=1";
 const INSTAGRAM_URL = "https://www.instagram.com/diagnostics_hub?igsh=MzNzanJpN2tlODhs";
-const TELEGRAM_BOT = "https://t.me/DiagnosticHub_bot";
+const TWITTER_URL = "https://x.com/Diagnosticshub";
 const YOUTUBE_URL = "https://youtube.com/@diagnostics_hub?si=NbI4-ay4QPOYSZEY";
 const LINKEDIN_URL = "https://www.linkedin.com/in/diagnostics-hub-834060420?utm_source=share_via&utm_content=profile&utm_medium=member_android";
 const EMAIL = "pathologyhubdiagnostics@gmail.com";
@@ -21,7 +21,7 @@ const Footer = () => {
       <div className="absolute bottom-[-100px] right-[-100px] w-[300px] h-[300px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container py-12 md:py-16 px-4 relative z-10 mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3 group">
@@ -71,13 +71,13 @@ const Footer = () => {
                 <Users className="h-5 w-5" />
               </a>
               <a
-                href={TELEGRAM_BOT}
+                href={TWITTER_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground transition-all duration-300 hover:-translate-y-1 hover:text-[#0088cc] hover:border-[#0088cc]/40 hover:bg-[#0088cc]/5 hover:shadow-[0_0_15px_rgba(0,136,204,0.15)]"
-                title="Telegram Bot"
+                className="h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground transition-all duration-300 hover:-translate-y-1 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/40 hover:bg-[#1DA1F2]/5 hover:shadow-[0_0_15px_rgba(29,161,242,0.15)]"
+                title="Follow on X (Twitter)"
               >
-                <Send className="h-5 w-5" />
+                <Twitter className="h-5 w-5" />
               </a>
               <a
                 href={INSTAGRAM_URL}
@@ -189,37 +189,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div className="space-y-4">
-            <h4 className="font-bold text-foreground text-base mb-4 tracking-tight border-b border-border pb-2">
-              Newsletter
-            </h4>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Subscribe to get updates on health checkups and diagnostic offers.
-            </p>
-            <form onSubmit={(e) => { e.preventDefault(); alert("Subscribed successfully!"); }} className="space-y-2">
-              <input
-                type="email"
-                placeholder="Enter email address"
-                required
-                className="w-full bg-card border border-input focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-foreground rounded-xl px-4 py-2.5 text-sm transition-all outline-none placeholder:text-muted-foreground/60 shadow-sm"
-              />
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 font-medium py-2.5 rounded-xl text-sm transition-all duration-300 shadow-md hover:shadow-emerald-500/20 shadow-emerald-500/10 active:scale-[0.98]"
-              >
-                Subscribe
-              </button>
-            </form>
-            <div className="flex gap-3 pt-2">
-              <div className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-widest bg-card border border-border px-2 py-1.5 rounded-lg shadow-sm">
-                NABL ISO
-              </div>
-              <div className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-widest bg-card border border-border px-2 py-1.5 rounded-lg shadow-sm">
-                100% SECURE
-              </div>
-            </div>
-          </div>
+
         </div>
 
         {/* Bottom */}

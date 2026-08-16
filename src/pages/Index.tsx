@@ -12,16 +12,17 @@ import WhyChooseSection from "@/components/home/WhyChooseSection";
 import AboutPreview from "@/components/home/AboutPreview";
 import CTASection from "@/components/home/CTASection";
 import HomeSlider from "@/components/home/HomeSlider";
+import HealthPackages from "@/components/home/HealthPackages";
 import { Droplet, Award, Zap, GitCompare } from "lucide-react";
 
 const Index = () => {
   return (
     <>
       <SEOHead
-        title="Pathology Lab & Diagnostic Center Rewa"
-        description="Diagnostics Hub Rewa - NABL accredited pathology lab offering 500+ diagnostic tests, blood tests, full body checkups & home sample collection in Rewa, Madhya Pradesh."
+        title="Blood Test & Diagnostic Services Across MP | Diagnostics Hub"
+        description="Book blood tests, full body checkups and home sample collection across Madhya Pradesh through Diagnostics Hub's verified partner lab network."
         canonical="/"
-        keywords="pathology lab rewa, diagnostic center rewa, blood test rewa, NABL lab, home sample collection rewa, full body checkup rewa MP, online blood test booking India, best pathology lab in Rewa MP, diagnostic centers in Rewa Madhya Pradesh, blood test labs in Rewa, pathology labs near me in Rewa, trusted diagnostic lab India"
+        keywords="online blood test booking in Madhya Pradesh, blood test MP, diagnostic services Madhya Pradesh, full body checkup MP, home sample collection Madhya Pradesh, pathology lab MP, NABL lab Madhya Pradesh, blood test centers MP, diagnostic labs in MP, health checkup packages Madhya Pradesh"
       />
       <OfferBanner />
       <CitySelector />
@@ -92,6 +93,7 @@ const Index = () => {
           </div>
         </div>
 
+        <HealthPackages hideBanner={true} />
         <HomeSlider />
         <DiagnosticShowcase />
         <PartnerLabs />

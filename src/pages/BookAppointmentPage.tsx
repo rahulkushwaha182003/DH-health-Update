@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, CheckCircle, Clock, FileText, Home, Building2, Star, Upload, X, FileUp, TestTube2, ArrowLeft } from "lucide-react";
+import { CalendarIcon, CheckCircle, Clock, FileText, Home, Building2, Star, Upload, X, FileUp, TestTube2, ArrowLeft, CreditCard, Banknote } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { tests, packages, formatINR } from "@/data/testsData";
@@ -26,16 +26,17 @@ import { syncToGoogleSheets } from "@/lib/googleSheets";
 import { sendTelegramMessage } from "@/lib/telegram";
 
 const bookingSchema = z.object({
-  firstName: z.string().min(2, "First name required").max(50),
-  lastName: z.string().min(2, "Last name required").max(50),
-  email: z.string().email("Invalid email").max(255),
-  phone: z.string().min(10, "Valid phone required").max(20),
+  fullName: z.string().min(2, "Full name required").max(100),
+  phone: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+  gender: z.string().min(1, "Please select gender"),
   date: z.date({ required_error: "Please select a date" }),
   timeSlot: z.string().min(1, "Please select a time slot"),
   testType: z.string().min(1, "Please select a test"),
   sampleCollection: z.enum(["lab", "home"]),
   address: z.string().min(10, "Please enter a valid address"),
   notes: z.string().max(500).optional(),
+  paymentMethod: z.enum(["cash", "online"]),
+  scheduleType: z.enum(["urgent", "schedule"]),
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -76,7 +77,8 @@ const BookTestPage = () => {
   const preselectedLab = searchParams.get("lab");
   const preselectedTotal = searchParams.get("total");
 
-  const isCartMode = cartItems.length > 0;
+  const isDirectBooking = !!(preselectedTest || preselectedTests);
+  const isCartMode = cartItems.length > 0 && !isDirectBooking;
   const initialTestType = isCartMode
     ? cartItems.map(item => item.name).join(" | ")
     : (preselectedTests ? preselectedTests : (preselectedTest || ""));
@@ -102,25 +104,28 @@ const BookTestPage = () => {
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
+      fullName: "",
       phone: "",
+      gender: "",
       timeSlot: "",
       testType: initialTestType,
       sampleCollection: "home",
       address: "",
       notes: "",
+      paymentMethod: "cash",
+      scheduleType: "schedule",
     },
   });
 
   useEffect(() => {
     if (isCartMode) {
       form.setValue("testType", cartItems.map(item => item.name).join(" | "));
+    } else if (preselectedTests) {
+      form.setValue("testType", preselectedTests);
     } else if (preselectedTest) {
       form.setValue("testType", preselectedTest);
     }
-  }, [isCartMode, cartItems, preselectedTest, form]);
+  }, [isCartMode, cartItems, preselectedTests, preselectedTest, form]);
 
   const selectedTestName = form.watch("testType");
   const selectedTestData = allTestOptions.find(t => t.value === selectedTestName);
@@ -165,17 +170,23 @@ const BookTestPage = () => {
       const homeFee = data.sampleCollection === 'home' && selectedPrice < 1000 ? 150 : 0;
       const totalAmt = selectedPrice + homeFee;
 
+      const nameParts = data.fullName.trim().split(/\s+/);
+      const fName = nameParts[0] || "";
+      const lName = nameParts.slice(1).join(" ") || "Patient";
+      const uEmail = session?.user?.email || "not-provided@diagnosticshub.com";
+      const bookedAtString = format(new Date(), "dd MMM yyyy, hh:mm a");
+
       const { error } = await supabase.from("appointments").insert({
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
+        first_name: fName,
+        last_name: lName,
+        email: uEmail,
         phone: data.phone,
         appointment_date: format(data.date, "yyyy-MM-dd"),
         time_slot: data.timeSlot,
         test_type: effectiveLabName ? `${data.testType} [${effectiveLabName}]` : data.testType,
         sample_collection: data.sampleCollection,
         collection_address: data.address || null,
-        notes: `[Base Price: ₹${selectedPrice}] [Fee: ₹${homeFee}] [Total Price: ₹${totalAmt}] ${prescriptionUrl ? `${data.notes || ''}\n[Prescription: ${prescriptionUrl}]`.trim() : (data.notes || null)}`,
+        notes: `[Payment: ${data.paymentMethod === 'cash' ? 'Cash on Collection' : 'Online'}] [Gender: ${data.gender}] [Booked At: ${bookedAtString}] [Base Price: ₹${selectedPrice}] [Fee: ₹${homeFee}] [Total Price: ₹${totalAmt}] ${prescriptionUrl ? `${data.notes || ''}\n[Prescription: ${prescriptionUrl}]`.trim() : (data.notes || null)}`,
         reference_number: refNum,
         status: "pending",
         user_id: session?.user?.id || null,
@@ -186,29 +197,32 @@ const BookTestPage = () => {
       // Sync to Google Sheets
       await syncToGoogleSheets('booking', {
         'ID': refNum,
-        'Name': `${data.firstName} ${data.lastName}`,
-        'Email': data.email,
+        'Name': data.fullName,
+        'Email': uEmail,
         'Phone': data.phone,
         'Test Type': effectiveLabName ? `${data.testType} [${effectiveLabName}]` : data.testType,
         'Price': totalAmt,
         'Appointment Date': format(data.date, "yyyy-MM-dd"),
         'Appointment Time': data.timeSlot,
         'Address': data.address || 'Lab Visit',
-        'Message': data.notes || '',
+        'Message': `[Payment: ${data.paymentMethod === 'cash' ? 'Cash on Collection' : 'Online'}] [Gender: ${data.gender}] ${data.notes || ''}`.trim(),
         'Status': 'pending',
-        'Created At': new Date().toISOString()
+        'Created At': bookedAtString
       });
 
       const telegramMsg = `
 <b>🆕 New Test Booking!</b>
 <b>Ref:</b> ${refNum}
-<b>Patient:</b> ${data.firstName} ${data.lastName}
+<b>Patient:</b> ${data.fullName}
+<b>Gender:</b> ${data.gender}
 <b>Phone:</b> ${data.phone}
+<b>Payment:</b> ${data.paymentMethod === 'cash' ? 'Cash on Collection' : 'Online'}
 <b>Test:</b> ${effectiveLabName ? `${data.testType} [${effectiveLabName}]` : data.testType}
 <b>Price:</b> ${formatINR(totalAmt)} ${data.sampleCollection === 'home' ? '(inc. fee)' : ''}
 <b>Date:</b> ${format(data.date, "dd MMM yyyy")}
 <b>Time:</b> ${data.timeSlot}
 <b>Address:</b> ${data.address || 'Lab Visit'}
+<b>Booked On:</b> ${bookedAtString}
 <b>Notes:</b> ${data.notes || 'None'}
       `.trim();
       await sendTelegramMessage(telegramMsg);
@@ -220,14 +234,17 @@ const BookTestPage = () => {
         refNumber: refNum,
         testName: data.testType,
         price: selectedPrice,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
+        homeFee: homeFee,
+        totalPrice: totalAmt,
+        fullName: data.fullName,
+        gender: data.gender,
         phone: data.phone,
         date: format(data.date, "dd MMM yyyy"),
         timeSlot: data.timeSlot,
         lab: effectiveLabName || "Diagnostics Hub Partner",
         address: data.address,
+        paymentMethod: data.paymentMethod === 'cash' ? 'Cash on Collection' : 'Online Payment',
+        bookedAt: bookedAtString,
       });
       setIsSubmitted(true);
       toast({
@@ -277,11 +294,19 @@ const BookTestPage = () => {
                   <div className="bg-muted/50 p-4 rounded-lg mb-4 text-left space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Test:</span>
-                      <span className="font-medium text-foreground">{submittedData.testName}</span>
+                      <span className="font-medium text-foreground text-right max-w-[200px] truncate">{submittedData.testName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Price:</span>
-                      <span className="font-bold text-primary">{formatINR(submittedData.price)}</span>
+                      <span className="text-muted-foreground">Test Price:</span>
+                      <span className="font-medium text-foreground">{formatINR(submittedData.price)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Home Collection Fee:</span>
+                      <span className="font-medium text-foreground">{submittedData.homeFee > 0 ? formatINR(submittedData.homeFee) : 'FREE'}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-dashed border-muted-foreground/15 pt-2 mt-1">
+                      <span className="font-semibold text-slate-800">Total Price:</span>
+                      <span className="font-bold text-[#004A99]">{formatINR(submittedData.totalPrice || submittedData.price)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Date:</span>
@@ -291,8 +316,16 @@ const BookTestPage = () => {
                       <span className="text-muted-foreground">Time:</span>
                       <span className="font-medium">{submittedData.timeSlot}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Payment Method:</span>
+                      <span className="font-semibold text-emerald-600">{submittedData.paymentMethod}</span>
+                    </div>
+                    <div className="flex justify-between text-xs border-t border-muted-foreground/15 pt-2 mt-2">
+                      <span className="text-slate-400">Booked On:</span>
+                      <span className="font-medium text-slate-500">{submittedData.bookedAt}</span>
+                    </div>
                     {submittedData.lab && (
-                      <div className="flex justify-between border-t border-muted-foreground/10 pt-2 mt-2">
+                      <div className="flex justify-between border-t border-muted-foreground/15 pt-2 mt-1">
                         <span className="text-muted-foreground">Lab:</span>
                         <span className="font-semibold text-primary">{submittedData.lab}</span>
                       </div>
@@ -326,38 +359,41 @@ const BookTestPage = () => {
         canonical="/book-appointment"
         keywords="book lab test rewa, diagnostic test rewa, home sample collection booking Rewa MP, pathology test booking, online blood test booking India"
       />
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-8 md:py-12">
-        <div className="container relative px-4 text-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="absolute top-0 left-4 flex items-center gap-2 text-slate-600 hover:text-primary transition-colors pl-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="font-semibold">Back</span>
-          </Button>
-          <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-4">Book Your Test</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
-            Select your test, choose a date & time, and book home sample collection.
-          </p>
-        </div>
-      </section>
+      {/* Premium page-specific background wrapper */}
+      <div className="bg-gradient-to-b from-[#F3F7FA] via-[#E9F0F3] to-[#F1F6F8] min-h-screen relative overflow-hidden pb-16">
+        {/* Glow decorative background elements */}
+        <div className="absolute top-20 left-10 w-[400px] h-[400px] bg-blue-200/35 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 right-10 w-[400px] h-[400px] bg-emerald-100/25 rounded-full blur-3xl pointer-events-none" />
 
-      <section className="py-8 md:py-12">
+        {/* Hero */}
+        <section className="bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-transparent border-b border-slate-100/40 py-8 md:py-10 relative z-10">
+          <div className="container relative px-4 text-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="absolute top-0 left-4 flex items-center gap-1.5 text-slate-500 hover:text-[#004A99] hover:bg-slate-100/60 rounded-full px-3 py-1 transition-all"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Back</span>
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-black text-[#003B73] mb-3 tracking-tight">Book Your Test</h1>
+            <p className="text-slate-500 max-w-2xl mx-auto text-xs md:text-sm">
+              Select your test, choose a date & time, and book home sample collection.
+            </p>
+          </div>
+        </section>
+
+      <section className="py-8 md:py-12 relative z-10">
         <div className="container max-w-3xl px-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                <TestTube2 className="h-5 w-5 text-primary" />
-                {selectedTestName ? selectedTestName : "Book Test"}
+          <Card className="border-white/80 bg-white/90 backdrop-blur-md shadow-xl shadow-blue-900/5 rounded-3xl border">
+            <CardHeader className="border-b border-slate-100 pb-5">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-black text-slate-800">
+                <TestTube2 className="h-5 w-5 text-[#004A99] animate-pulse" />
+                Booking Details
               </CardTitle>
-              <CardDescription className="flex items-center justify-between">
-                <span>Fill in your details to book a test</span>
-                {selectedPrice > 0 && (
-                  <span className="text-lg font-bold text-primary">{formatINR(selectedPrice)}</span>
-                )}
+              <CardDescription className="text-slate-500">
+                Fill in your details below to schedule your home sample collection.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -371,18 +407,18 @@ const BookTestPage = () => {
                     </h3>
 
                     {isCartMode ? (
-                      <div className="p-4 rounded-lg border bg-slate-50">
+                      <div className="p-5 rounded-2xl border border-slate-100 bg-white/60 shadow-sm">
                         <ul className="space-y-2 mb-3">
                           {cartItems.map(item => (
                             <li key={item.id} className="flex justify-between text-sm">
                               <span className="font-medium text-slate-700">{item.name}</span>
-                              <span className="text-slate-500">{formatINR(item.discountPrice || item.price)}</span>
+                              <span className="text-slate-500 font-semibold">{formatINR(item.discountPrice || item.price)}</span>
                             </li>
                           ))}
                         </ul>
-                        <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-800">
+                        <div className="pt-3 border-t border-slate-100 flex justify-between font-black text-slate-800">
                           <span>Total Tests Cost</span>
-                          <span>{formatINR(totalAmount)}</span>
+                          <span className="text-[#004A99]">{formatINR(totalAmount)}</span>
                         </div>
                         <input type="hidden" {...form.register("testType")} value={initialTestType} />
                       </div>
@@ -438,44 +474,20 @@ const BookTestPage = () => {
                   </div>
 
                   <div className="space-y-6">
-                    <h3 className="font-semibold text-lg text-foreground pb-2 border-b">Personal Information</h3>
+                    <h3 className="font-bold text-lg text-slate-800 pb-2 border-b border-slate-100">Personal Information</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                       <FormField
                         control={form.control}
-                        name="firstName"
+                        name="fullName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">First Name</FormLabel>
+                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-[#004A99] font-black">Full Name *</FormLabel>
                             <FormControl>
-                              <Input placeholder="John" className="h-11 shadow-sm" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Last Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Doe" className="h-11 shadow-sm" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Email</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="john@example.com" className="h-11 shadow-sm" {...field} />
+                              <Input 
+                                placeholder="Enter patient's full name" 
+                                className="h-11 shadow-sm rounded-xl border-l-4 border-l-[#004A99] border-blue-200 bg-blue-50/20 font-semibold text-slate-800 focus-visible:ring-primary/25 focus-visible:border-primary focus-visible:bg-white transition-all duration-300 shadow-[0_0_15px_rgba(59,130,246,0.06)]" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -486,79 +498,43 @@ const BookTestPage = () => {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Phone Number</FormLabel>
+                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Mobile Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="+91 98765 43210" className="h-11 shadow-sm" {...field} />
+                              <Input 
+                                placeholder="Enter 10-digit mobile number" 
+                                className="h-11 shadow-sm rounded-xl focus-visible:ring-primary/20 focus-visible:border-primary" 
+                                {...field} 
+                                onChange={(e) => {
+                                  // Allow only digits and limit to 10 characters
+                                  const value = e.target.value.replace(/\D/g, "");
+                                  if (value.length <= 10) {
+                                    field.onChange(value);
+                                  }
+                                }}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                  </div>
-
-                  {/* Schedule */}
-                  <div className="space-y-6 pt-4">
-                    <h3 className="font-semibold text-lg text-foreground pb-2 border-b">Schedule</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                       <FormField
                         control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Preferred Date</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full pl-3 h-11 text-left font-normal shadow-sm",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => {
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    return date < today || date.getDay() === 0;
-                                  }}
-                                  initialFocus
-                                  className="pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="timeSlot"
+                        name="gender"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Time Slot</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Gender</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-11 shadow-sm">
-                                  <SelectValue placeholder="Select time" />
+                                <SelectTrigger className="h-11 shadow-sm rounded-xl focus:ring-primary/20 focus:border-primary">
+                                  <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
-                                {timeSlots.map((slot) => (
-                                  <SelectItem key={slot} value={slot}>
-                                    {slot}
-                                  </SelectItem>
-                                ))}
+                              <SelectContent className="rounded-xl">
+                                <SelectItem value="Male">Male</SelectItem>
+                                <SelectItem value="Female">Female</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -568,28 +544,176 @@ const BookTestPage = () => {
                     </div>
                   </div>
 
+                  {/* Schedule */}
+                  <div className="space-y-6 pt-4">
+                    <h3 className="font-bold text-lg text-slate-800 pb-2 border-b border-slate-100">Schedule Details</h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="scheduleType"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Choose Booking Mode</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                if (val === "urgent") {
+                                  // Pre-fill today's date and urgent time slot
+                                  form.setValue("date", new Date());
+                                  form.setValue("timeSlot", "Urgent (ASAP - within 2 hours)");
+                                } else {
+                                  form.setValue("date", undefined as any);
+                                  form.setValue("timeSlot", "");
+                                }
+                              }}
+                              defaultValue={field.value}
+                              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                            >
+                              <FormItem>
+                                <FormControl>
+                                  <label
+                                    className={cn(
+                                      "flex items-start gap-3 p-4 rounded-2xl border cursor-pointer hover:bg-slate-50/50 transition-all",
+                                      field.value === "urgent" 
+                                        ? "border-amber-500 bg-amber-50/20 shadow-sm ring-2 ring-amber-500/10" 
+                                        : "border-slate-200 bg-white"
+                                    )}
+                                  >
+                                    <RadioGroupItem value="urgent" className="mt-1 text-amber-600 border-amber-300 focus:ring-amber-500" />
+                                    <div className="space-y-1">
+                                      <p className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                                        <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                                        Urgent (ASAP)
+                                      </p>
+                                      <p className="text-xs text-slate-500 leading-relaxed">Book for today. Our phlebotomist will arrive at your home within 60-90 minutes.</p>
+                                    </div>
+                                  </label>
+                                </FormControl>
+                              </FormItem>
+                              <FormItem>
+                                <FormControl>
+                                  <label
+                                    className={cn(
+                                      "flex items-start gap-3 p-4 rounded-2xl border cursor-pointer hover:bg-slate-50/50 transition-all",
+                                      field.value === "schedule" 
+                                        ? "border-[#004A99] bg-blue-50/20 shadow-sm ring-2 ring-blue-500/10" 
+                                        : "border-slate-200 bg-white"
+                                    )}
+                                  >
+                                    <RadioGroupItem value="schedule" className="mt-1" />
+                                    <div className="space-y-1">
+                                      <p className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                                        Schedule for Later
+                                      </p>
+                                      <p className="text-xs text-slate-500 leading-relaxed">Select a preferred date and time slot for sample collection.</p>
+                                    </div>
+                                  </label>
+                                </FormControl>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("scheduleType") === "schedule" && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 pt-2">
+                        <FormField
+                          control={form.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Preferred Date</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full pl-3 h-11 text-left font-normal shadow-sm rounded-xl border-slate-200 hover:bg-slate-50/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50 text-slate-500" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 rounded-2xl shadow-xl border border-slate-100" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) => {
+                                      const today = new Date();
+                                      today.setHours(0, 0, 0, 0);
+                                      return date < today || date.getDay() === 0;
+                                    }}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="timeSlot"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Time Slot</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-11 shadow-sm rounded-xl border-slate-200 focus:ring-primary/20 focus:border-primary">
+                                    <SelectValue placeholder="Select time" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-xl">
+                                  {timeSlots.map((slot) => (
+                                    <SelectItem key={slot} value={slot}>
+                                      {slot}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+                  </div>
+ 
                   {/* Home Collection */}
                   <div className="space-y-4">
-                    <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
-                      <div className="flex items-center gap-3">
-                        <Home className="h-6 w-6 text-primary" />
+                    <div className="p-5 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />
+                      <div className="flex items-center gap-3 relative z-10">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100/50">
+                          <Home className="h-5 w-5 text-blue-600" />
+                        </div>
                         <div>
-                          <p className="font-medium">Home Sample Collection</p>
-                          <p className="text-sm text-muted-foreground">Our phlebotomist will visit your location ({homeFee > 0 ? `+${formatINR(homeFee)} service fee` : 'FREE home collection'})</p>
+                          <p className="font-bold text-slate-800 text-sm md:text-base">Home Sample Collection</p>
+                          <p className="text-xs md:text-sm text-slate-500 leading-normal">Our phlebotomist will visit your location ({homeFee > 0 ? `+${formatINR(homeFee)} service fee` : 'FREE home collection'})</p>
                         </div>
                       </div>
                     </div>
                     <input type="hidden" {...form.register("sampleCollection")} value="home" />
-
+ 
                     <FormField
                       control={form.control}
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Collection Address <span className="text-destructive">*</span></FormLabel>
+                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Collection Address <span className="text-destructive">*</span></FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="Enter your full address for home sample collection"
+                              className="min-h-[100px] rounded-xl shadow-sm border-slate-200 focus-visible:ring-primary/20 focus-visible:border-primary resize-none"
                               {...field}
                             />
                           </FormControl>
@@ -597,16 +721,17 @@ const BookTestPage = () => {
                         </FormItem>
                       )}
                     />
-
+ 
                     <FormField
                       control={form.control}
                       name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Additional Notes (Optional)</FormLabel>
+                          <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Additional Notes (Optional)</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="Any special instructions or requirements..."
+                              className="min-h-[80px] rounded-xl shadow-sm border-slate-200 focus-visible:ring-primary/20 focus-visible:border-primary resize-none"
                               {...field}
                             />
                           </FormControl>
@@ -615,9 +740,9 @@ const BookTestPage = () => {
                       )}
                     />
                   </div>
-
+ 
                   {/* Upload Prescription PDF */}
-                  <div className="p-4 rounded-lg border border-border bg-muted/30">
+                  <div className="p-5 rounded-2xl border border-slate-200/60 bg-slate-50/50">
                     <p className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
                       <FileUp className="h-4 w-4 text-primary" />
                       Upload Prescription (Optional)
@@ -663,6 +788,28 @@ const BookTestPage = () => {
                     )}
                   </div>
 
+                  {/* Payment Method Option */}
+                  <div className="space-y-4 pt-2">
+                    <h3 className="font-bold text-slate-800 text-sm md:text-base flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-[#004A99]" />
+                      Payment Method
+                    </h3>
+                    <div className="flex items-start gap-3 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-50/10 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50 flex-shrink-0">
+                        <Banknote className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <div className="space-y-1 relative z-10">
+                        <p className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                          Cash on Collection
+                        </p>
+                        <p className="text-xs md:text-sm text-slate-500 leading-normal">Pay cash or scan any UPI app (PhonePe, Paytm, GooglePay) directly to our phlebotomist when they collect your blood sample.</p>
+                      </div>
+                    </div>
+                    {/* Retain form value state for paymentMethod = "cash" */}
+                    <input type="hidden" {...form.register("paymentMethod")} value="cash" />
+                  </div>
+
                   {/* Total Summary */}
                   {selectedPrice > 0 && (
                     <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
@@ -694,6 +841,7 @@ const BookTestPage = () => {
           </Card>
         </div>
       </section>
+      </div>
     </Layout>
   );
 };

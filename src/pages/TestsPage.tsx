@@ -13,6 +13,7 @@ import { bharatTests } from "@/data/bharatTests";
 import { useCart } from "@/context/CartContext";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { generateSlug } from "@/data/testsData";
+import { RemoveConfirmDialog } from "@/components/ui/RemoveConfirmDialog";
 
 const FALLBACK_LOGO = "https://via.placeholder.com/60?text=Lab";
 
@@ -33,6 +34,8 @@ export default function DiagnosticsUI() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedLab = searchParams.get("lab");
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [selectedTestToRemove, setSelectedTestToRemove] = useState<{ id: string; name: string } | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const activeCategory = searchParams.get("category") || "All";
@@ -254,10 +257,13 @@ export default function DiagnosticsUI() {
                       <div className="flex items-center justify-between mt-auto pt-2">
                         {cartItems.some(i => i.id === test.id) ? (
                           <Button
-                            className="bg-[#DE6F53] hover:bg-[#C2583F] text-white rounded-lg px-6 py-2 h-auto text-sm font-semibold active:scale-95 transition-all"
-                            onClick={() => removeFromCart(test.id)}
+                            className="bg-[#3B8B41] hover:bg-[#2F7034] text-white rounded-lg px-6 py-2 h-auto text-sm font-semibold active:scale-95 transition-all"
+                            onClick={() => {
+                              setSelectedTestToRemove({ id: test.id, name: test.name });
+                              setConfirmRemoveOpen(true);
+                            }}
                           >
-                            Remove
+                            Added
                           </Button>
                         ) : (
                           <Button
@@ -274,7 +280,7 @@ export default function DiagnosticsUI() {
                               });
                             }}
                           >
-                            Add to cart
+                            + Add
                           </Button>
                         )}
                         <div className="flex items-center gap-3">
@@ -347,6 +353,23 @@ export default function DiagnosticsUI() {
             </div>
           )}
         </div>
+        
+        {selectedTestToRemove && (
+          <RemoveConfirmDialog
+            isOpen={confirmRemoveOpen}
+            onClose={() => {
+              setConfirmRemoveOpen(false);
+              setSelectedTestToRemove(null);
+            }}
+            onConfirm={() => {
+              removeFromCart(selectedTestToRemove.id);
+            }}
+            itemName={selectedTestToRemove.name}
+            isPackage={
+              activeTests.find(t => t.id === selectedTestToRemove.id)?.category === "Health Package"
+            }
+          />
+        )}
       </Layout>
     );
   }

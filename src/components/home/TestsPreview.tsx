@@ -6,6 +6,8 @@ import { ArrowRight, Clock, TrendingUp, ShoppingCart } from "lucide-react";
 import { tests, formatINR, generateSlug } from "@/data/testsData";
 import { useCart } from "@/context/CartContext";
 import { useNavigate } from "react-router-dom";
+import { RemoveConfirmDialog } from "@/components/ui/RemoveConfirmDialog";
+import { useState } from "react";
 
 // Get top 6 popular tests
 const popularTests = tests.slice(0, 6).map((test, idx) => ({
@@ -16,6 +18,8 @@ const popularTests = tests.slice(0, 6).map((test, idx) => ({
 const TestsPreview = () => {
   const { addToCart, cartItems, removeFromCart } = useCart();
   const navigate = useNavigate();
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [selectedTestToRemove, setSelectedTestToRemove] = useState<{ id: string; name: string } | null>(null);
 
   return (
     <section className="py-20 bg-background">
@@ -59,10 +63,13 @@ const TestsPreview = () => {
               <div className="flex items-center justify-between mt-auto pt-2">
                 {cartItems.some(i => i.id === `preview-${test.name}`) ? (
                   <Button
-                    className="bg-[#DE6F53] hover:bg-[#C2583F] text-white rounded-lg px-6 py-2 h-auto text-sm font-semibold active:scale-95 transition-all"
-                    onClick={() => removeFromCart(`preview-${test.name}`)}
+                    className="bg-[#3B8B41] hover:bg-[#2F7034] text-white rounded-lg px-6 py-2 h-auto text-sm font-semibold active:scale-95 transition-all"
+                    onClick={() => {
+                      setSelectedTestToRemove({ id: `preview-${test.name}`, name: test.name });
+                      setConfirmRemoveOpen(true);
+                    }}
                   >
-                    Remove
+                    Added
                   </Button>
                 ) : (
                   <Button
@@ -78,7 +85,7 @@ const TestsPreview = () => {
                       });
                     }}
                   >
-                    Add to cart
+                    + Add
                   </Button>
                 )}
                 <div className="flex items-center gap-3">
@@ -106,6 +113,20 @@ const TestsPreview = () => {
           </Button>
         </div>
       </div>
+      {selectedTestToRemove && (
+        <RemoveConfirmDialog
+          isOpen={confirmRemoveOpen}
+          onClose={() => {
+            setConfirmRemoveOpen(false);
+            setSelectedTestToRemove(null);
+          }}
+          onConfirm={() => {
+            removeFromCart(selectedTestToRemove.id);
+          }}
+          itemName={selectedTestToRemove.name}
+          isPackage={false}
+        />
+      )}
     </section>
   );
 };

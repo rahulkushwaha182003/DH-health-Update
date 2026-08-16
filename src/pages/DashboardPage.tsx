@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Calendar, FileText, User, LogOut, Clock, CheckCircle, AlertCircle,
   Loader2, Plus, Settings, Pencil, Save, X, TestTube2,
-  Activity, Phone, MapPin, RefreshCw, IndianRupee, Download
+  Activity, Phone, MapPin, RefreshCw, IndianRupee, Download, CreditCard, Building2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { tests, packages, formatINR } from "@/data/testsData";
@@ -42,6 +42,8 @@ interface Appointment {
   first_name: string;
   last_name: string;
   sample_collection: string;
+  notes?: string | null;
+  collection_address?: string | null;
 }
 
 interface Report {
@@ -90,6 +92,149 @@ interface Profile {
   date_of_birth: string | null;
 }
 
+interface BookingDetails {
+  gender?: string;
+  paymentMethod?: string;
+  collectionAddress?: string;
+  userNotes?: string;
+  basePrice?: string | number;
+  homeFee?: string | number;
+  totalPrice?: string | number;
+}
+
+const getPriceFromNotesOrLookup = (notes: string | null | undefined, testType: string): string | number => {
+  if (notes) {
+    const totalPriceMatch = notes.match(/\[Total Price:\s*₹?(\d+)\]/i);
+    if (totalPriceMatch && totalPriceMatch[1]) {
+      return parseInt(totalPriceMatch[1]);
+    }
+    const basePriceMatch = notes.match(/\[Base Price:\s*₹?(\d+)\]/i);
+    if (basePriceMatch && basePriceMatch[1]) {
+      return parseInt(basePriceMatch[1]);
+    }
+  }
+
+  const cleanTestType = testType.split(' [')[0];
+  const individualTests = cleanTestType.split(' | ');
+  let calculatedPrice = 0;
+  let hasValidLookup = false;
+
+  for (const tName of individualTests) {
+    const trimmedName = tName.trim().toLowerCase();
+    const found = allTestOptions.find(opt => {
+      const optVal = opt.value.toLowerCase();
+      return optVal === trimmedName || trimmedName.startsWith(optVal) || optVal.startsWith(trimmedName);
+    });
+    if (found) {
+      calculatedPrice += found.price;
+      hasValidLookup = true;
+    }
+  }
+
+  if (hasValidLookup) {
+    return calculatedPrice;
+  }
+
+  const singleLookup = lookupTestPrice(testType);
+  if (singleLookup > 0) {
+    return singleLookup;
+  }
+
+  return "N/A";
+};
+
+const parseBookingNotes = (notes: string | null | undefined, collectionAddress: string | null | undefined, testType: string): BookingDetails | null => {
+  const details: BookingDetails = {};
+  let hasDetails = false;
+
+  if (collectionAddress) {
+    details.collectionAddress = collectionAddress;
+    hasDetails = true;
+  }
+
+  let parsedBase = 0;
+  let parsedFee = 0;
+  let parsedTotal = 0;
+
+  if (notes) {
+    const genderMatch = notes.match(/\[Gender:\s*([^\]]+)\]/i);
+    if (genderMatch && genderMatch[1]) {
+      details.gender = genderMatch[1].trim();
+      hasDetails = true;
+    }
+
+    const paymentMatch = notes.match(/\[Payment:\s*([^\]]+)\]/i);
+    if (paymentMatch && paymentMatch[1]) {
+      details.paymentMethod = paymentMatch[1].trim();
+      hasDetails = true;
+    }
+
+    const baseMatch = notes.match(/\[Base Price:\s*₹?(\d+)\]/i);
+    if (baseMatch && baseMatch[1]) {
+      parsedBase = parseInt(baseMatch[1]);
+      details.basePrice = parsedBase;
+      hasDetails = true;
+    }
+
+    const feeMatch = notes.match(/\[Fee:\s*₹?(\d+)\]/i);
+    if (feeMatch && feeMatch[1]) {
+      parsedFee = parseInt(feeMatch[1]);
+      details.homeFee = parsedFee;
+      hasDetails = true;
+    }
+
+    const totalMatch = notes.match(/\[Total Price:\s*₹?(\d+)\]/i);
+    if (totalMatch && totalMatch[1]) {
+      parsedTotal = parseInt(totalMatch[1]);
+      details.totalPrice = parsedTotal;
+      hasDetails = true;
+    }
+
+    let userNotes = notes;
+    userNotes = userNotes.replace(/\[Payment:[^\]]+\]/gi, '');
+    userNotes = userNotes.replace(/\[Gender:[^\]]+\]/gi, '');
+    userNotes = userNotes.replace(/\[Booked At:[^\]]+\]/gi, '');
+    userNotes = userNotes.replace(/\[Base Price:[^\]]+\]/gi, '');
+    userNotes = userNotes.replace(/\[Fee:[^\]]+\]/gi, '');
+    userNotes = userNotes.replace(/\[Total Price:[^\]]+\]/gi, '');
+    userNotes = userNotes.replace(/\[Prescription:[^\]]+\]/gi, '');
+    
+    const cleanedNotes = userNotes.replace(/\s+/g, ' ').trim();
+    if (cleanedNotes && cleanedNotes !== 'null' && cleanedNotes !== 'undefined') {
+      details.userNotes = cleanedNotes;
+      hasDetails = true;
+    }
+  }
+
+  if (!details.basePrice) {
+    const cleanTestType = testType.split(' [')[0];
+    const individualTests = cleanTestType.split(' | ');
+    let calculatedPrice = 0;
+    let hasValidLookup = false;
+
+    for (const tName of individualTests) {
+      const trimmedName = tName.trim().toLowerCase();
+      const found = allTestOptions.find(opt => {
+        const optVal = opt.value.toLowerCase();
+        return optVal === trimmedName || trimmedName.startsWith(optVal) || optVal.startsWith(trimmedName);
+      });
+      if (found) {
+        calculatedPrice += found.price;
+        hasValidLookup = true;
+      }
+    }
+
+    if (hasValidLookup) {
+      details.basePrice = calculatedPrice;
+      details.homeFee = calculatedPrice < 1000 ? 150 : 0;
+      details.totalPrice = calculatedPrice + (calculatedPrice < 1000 ? 150 : 0);
+      hasDetails = true;
+    }
+  }
+
+  return hasDetails ? details : null;
+};
+
 const statusConfig: Record<string, { className: string; icon: typeof Clock }> = {
   pending: { className: "bg-warning/15 text-warning border-warning/30", icon: Clock },
   confirmed: { className: "bg-primary/15 text-primary border-primary/30", icon: CheckCircle },
@@ -113,14 +258,23 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const BookingRow = ({
-  title, date, time, refNumber, status, price, resultsStatus, extra, badge, reportUrl, onDownloadReport
+  title, date, time, refNumber, status, price, resultsStatus, extra, badge, reportUrl, onDownloadReport, details
 }: {
   title: string; date: string; time: string; refNumber: string; status: string;
   price?: number | string; resultsStatus?: string | null; extra?: string; badge?: React.ReactNode;
   reportUrl?: string | null; onDownloadReport?: () => void;
+  details?: BookingDetails | null;
 }) => {
-  const testList = (title || "").split(' | ');
-  const patientName = extra ? extra.replace('Patient: ', '') : "N/A";
+  const labMatch = title.match(/\[([^\]]+)\]$/);
+  const labName = labMatch ? labMatch[1] : null;
+  const cleanTitle = title.replace(/\s*\[[^\]]+\]$/, '');
+
+  const testList = (cleanTitle || "").split(' | ');
+  let patientName = extra ? extra.replace('Patient: ', '') : "N/A";
+  // Clean up fallback last name "Patient" if it was appended
+  if (patientName.endsWith(" Patient")) {
+    patientName = patientName.slice(0, -8);
+  }
   
   return (
     <div className="p-5 sm:p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-primary/30 transition-all duration-300 group">
@@ -132,6 +286,11 @@ const BookingRow = ({
               <span className="text-[10px] uppercase font-bold text-primary tracking-widest px-2 py-0.5 bg-primary/10 rounded-md">Patient</span>
               <StatusBadge status={status} />
               {badge}
+              {labName && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200/50 text-xs font-bold px-2 py-0.5 rounded-md">
+                  {labName}
+                </Badge>
+              )}
             </div>
             <h3 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight group-hover:text-primary transition-colors">
               {patientName}
@@ -156,6 +315,7 @@ const BookingRow = ({
                 </span>
               </div>
             )}
+
           </div>
         </div>
 
@@ -173,6 +333,70 @@ const BookingRow = ({
             ))}
           </ul>
         </div>
+
+        {/* Booking Details Section */}
+        {details && (details.gender || details.paymentMethod || details.collectionAddress || details.userNotes || details.basePrice !== undefined || details.homeFee !== undefined) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100 text-xs font-semibold text-slate-600">
+            {details.gender && (
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <span className="text-slate-400 uppercase tracking-wider block text-[9px] leading-none mb-1">Gender</span>
+                  <span className="text-slate-800 font-bold leading-normal">{details.gender}</span>
+                </div>
+              </div>
+            )}
+            {details.paymentMethod && (
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <span className="text-slate-400 uppercase tracking-wider block text-[9px] leading-none mb-1">Payment Method</span>
+                  <span className="text-slate-800 font-bold leading-normal">{details.paymentMethod}</span>
+                </div>
+              </div>
+            )}
+            {details.basePrice !== undefined && (
+              <div className="flex items-center gap-2">
+                <IndianRupee className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <span className="text-slate-400 uppercase tracking-wider block text-[9px] leading-none mb-1">Test Price</span>
+                  <span className="text-slate-800 font-bold leading-normal">
+                    {typeof details.basePrice === 'number' ? `₹${details.basePrice.toLocaleString('en-IN')}` : details.basePrice}
+                  </span>
+                </div>
+              </div>
+            )}
+            {details.homeFee !== undefined && (
+              <div className="flex items-center gap-2">
+                <IndianRupee className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <span className="text-slate-400 uppercase tracking-wider block text-[9px] leading-none mb-1">Home Collection Fee</span>
+                  <span className="text-slate-800 font-bold leading-normal">
+                    {Number(details.homeFee) > 0 ? `₹${details.homeFee}` : "FREE"}
+                  </span>
+                </div>
+              </div>
+            )}
+            {details.collectionAddress && (
+              <div className="flex items-start gap-2 sm:col-span-2">
+                <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-slate-400 uppercase tracking-wider block text-[9px] leading-none mb-1">Collection Address</span>
+                  <span className="text-slate-800 font-bold leading-normal break-words">{details.collectionAddress}</span>
+                </div>
+              </div>
+            )}
+            {details.userNotes && (
+              <div className="flex items-start gap-2 sm:col-span-2 md:col-span-3">
+                <FileText className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-slate-400 uppercase tracking-wider block text-[9px] leading-none mb-1">Notes / Special Instructions</span>
+                  <span className="text-slate-800 font-bold italic leading-normal">{details.userNotes}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bottom Bar: Meta Info */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
@@ -196,6 +420,18 @@ const BookingRow = ({
                 <span className="text-[13px] font-extrabold text-slate-800">{time}</span>
               </div>
             </div>
+
+            {labName && (
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-black text-slate-400 leading-none mb-1">Lab</span>
+                  <span className="text-[13px] font-extrabold text-slate-800">{labName}</span>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -584,6 +820,8 @@ const DashboardPage = () => {
                     <div className="space-y-3">
                       {appointments.map(apt => {
                         const report = reports.find(r => r.appointment_id === apt.id);
+                        const parsedDetails = parseBookingNotes(apt.notes, apt.collection_address, apt.test_type);
+                        const parsedPrice = parsedDetails?.totalPrice || getPriceFromNotesOrLookup(apt.notes, apt.test_type);
                         return (
                           <BookingRow
                             key={`apt-${apt.id}`}
@@ -593,26 +831,38 @@ const DashboardPage = () => {
                             refNumber={apt.reference_number}
                             status={apt.status}
                             resultsStatus={apt.results_status}
+                            price={parsedPrice}
                             extra={`Patient: ${apt.first_name} ${apt.last_name}`}
                             badge={apt.sample_collection ? <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{apt.sample_collection}</Badge> : undefined}
                             reportUrl={report?.file_url}
                             onDownloadReport={() => report?.file_url && handleDownloadReport(report.file_url)}
+                            details={parsedDetails}
                           />
                         );
                       })}
-                      {testBookings.map(booking => (
-                        <BookingRow
-                          key={`tb-${booking.id}`}
-                          title={booking.test_name}
-                          date={booking.preferred_date}
-                          time={booking.preferred_time}
-                          refNumber={booking.reference_number}
-                          status={booking.status}
-                          price={booking.test_price}
-                          extra={booking.test_category}
-                          badge={<Badge variant="outline" className="capitalize text-xs flex-shrink-0">{booking.sample_collection}</Badge>}
-                        />
-                      ))}
+                      {testBookings.map(booking => {
+                        const parsedDetails = {
+                          collectionAddress: booking.patient_address,
+                          userNotes: booking.notes || undefined,
+                          basePrice: booking.test_price,
+                          homeFee: booking.test_price < 1000 ? 150 : 0,
+                          totalPrice: booking.test_price + (booking.test_price < 1000 ? 150 : 0)
+                        };
+                        return (
+                          <BookingRow
+                            key={`tb-${booking.id}`}
+                            title={booking.test_name}
+                            date={booking.preferred_date}
+                            time={booking.preferred_time}
+                            refNumber={booking.reference_number}
+                            status={booking.status}
+                            price={parsedDetails.totalPrice}
+                            extra={booking.test_category}
+                            badge={<Badge variant="outline" className="capitalize text-xs flex-shrink-0">{booking.sample_collection}</Badge>}
+                            details={parsedDetails}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>

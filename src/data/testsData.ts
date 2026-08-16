@@ -213,6 +213,56 @@ export const packages = [
     tests: ["CBC", "Dengue NS1", "Malaria", "Typhoid", "Urine Culture", "CRP"],
     description: "Complete fever investigation"
   },
+  {
+    name: "DH Health Package 1",
+    mrp: 7500,
+    price: 1800,
+    tests: [
+      "Glucose Fasting (BSF) (1)",
+      "Haemogram (CBC + ESR) (27)",
+      "HbA1C (Glycosylated Haemoglobin) (2)",
+      "Kidney Function Test (KFT) (12)",
+      "Lipid Profile (9)",
+      "Iron Profile Test (7)",
+      "Thyroid Profile Total (3)",
+      "Urine Routine & Microscopic Examination (23)",
+      "Vitamin B12/Cyanocobalamin (1)",
+      "Vitamin D 25 Hydroxy (1)",
+      "Liver Function Test (LFT) (12)"
+    ],
+    description: "Full Body Checkup"
+  },
+  {
+    name: "DH Health Package 2",
+    mrp: 4500,
+    price: 1550,
+    tests: [
+      "CBC + ESR (26)",
+      "Liver Function Test (11)",
+      "Kidney Function Test (7)",
+      "Lipid Profile (9)",
+      "Thyroid Function Test (3)",
+      "Fasting Blood Sugar",
+      "Iron Profile (4)",
+      "Diabetes (3)",
+      "Urine Routine & Microscopic Examination (23)"
+    ],
+    description: "Full Body Checkup"
+  },
+  {
+    name: "DH Health Package 3",
+    mrp: 3050,
+    price: 1099,
+    tests: [
+      "CBC + ESR (26 Tests)",
+      "Liver Function Test (11)",
+      "Kidney Function Test (7)",
+      "Lipid Profile (9)",
+      "Thyroid Function Test (3)",
+      "Fasting Blood Sugar"
+    ],
+    description: "Full Body Checkup"
+  },
 ];
 
 // Partner labs

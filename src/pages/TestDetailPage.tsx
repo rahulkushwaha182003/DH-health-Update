@@ -1,5 +1,7 @@
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
+import { useState } from "react";
+import { RemoveConfirmDialog } from "@/components/ui/RemoveConfirmDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, Eye } from "lucide-react";
@@ -16,6 +18,8 @@ const TestDetailPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addToCart, cartItems, removeFromCart } = useCart();
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [selectedTestToRemove, setSelectedTestToRemove] = useState<{ id: string; name: string } | null>(null);
 
   const selectedLab = searchParams.get("lab");
 
@@ -169,10 +173,13 @@ const TestDetailPage = () => {
                 <div className="w-full flex flex-col md:items-end space-y-2">
                   {cartItems.some(i => i.id === test.id) ? (
                     <Button
-                      className="w-full md:w-32 bg-[#DE6F53] hover:bg-[#C2583F] text-white rounded font-semibold text-[13px] h-9"
-                      onClick={() => removeFromCart(test.id)}
+                      className="w-full md:w-32 bg-[#3B8B41] hover:bg-[#2F7034] text-white rounded font-semibold text-[13px] h-9"
+                      onClick={() => {
+                        setSelectedTestToRemove({ id: test.id, name: test.name });
+                        setConfirmRemoveOpen(true);
+                      }}
                     >
-                      Remove
+                      Added
                     </Button>
                   ) : (
                     <Button
@@ -189,7 +196,7 @@ const TestDetailPage = () => {
                         });
                       }}
                     >
-                      Add to cart
+                      + Add
                     </Button>
                   )}
                   <p className="text-[11px] text-slate-500 text-center md:text-right w-full">
@@ -230,6 +237,21 @@ const TestDetailPage = () => {
           </Card>
         </div>
       </div>
+      
+      {selectedTestToRemove && (
+        <RemoveConfirmDialog
+          isOpen={confirmRemoveOpen}
+          onClose={() => {
+            setConfirmRemoveOpen(false);
+            setSelectedTestToRemove(null);
+          }}
+          onConfirm={() => {
+            removeFromCart(selectedTestToRemove.id);
+          }}
+          itemName={selectedTestToRemove.name}
+          isPackage={false}
+        />
+      )}
     </Layout>
   );
 };

@@ -1480,7 +1480,7 @@ export const metropolisTests = [
     "homeCollection": true
   },
   {
-    "id": "MET-1048",
+    "id": "MET-1048A",
     "name": "Occult blood Stool",
     "category": "Individual Test",
     "price": 150,

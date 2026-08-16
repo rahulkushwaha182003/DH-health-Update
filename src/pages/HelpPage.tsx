@@ -204,6 +204,57 @@ const HelpPage = () => {
         </div>
       </section>
 
+      {/* Privacy Policy Section */}
+      <section className="py-12 md:py-16 bg-muted/30">
+        <div className="container max-w-3xl px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Privacy Policy</h2>
+          <Card>
+            <CardContent className="p-6 md:p-8 space-y-6 text-sm md:text-base text-muted-foreground leading-relaxed">
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-bold text-foreground mb-2">1. Introduction</h3>
+                <p>
+                  Welcome to Diagnostics Hub. We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and safeguard your personal and medical information when you visit our website, book appointments, or use our diagnostic services.
+                </p>
+              </div>
+
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-bold text-foreground mb-2">2. Information We Collect</h3>
+                <p className="mb-2">We collect personal information that you provide to us, including:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Personal details:</strong> Name, age, gender, date of birth, phone number, email address, and home address.</li>
+                  <li><strong>Health & Medical data:</strong> Doctor's prescriptions, list of selected tests/packages, sample details, and generated diagnostic test reports.</li>
+                </ul>
+              </div>
+
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-bold text-foreground mb-2">3. How We Use Your Information</h3>
+                <p className="mb-2">Your information is used solely for medical and support operations, such as:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Scheduling appointments and home sample collection visits.</li>
+                  <li>Processing laboratory test samples and compiling accurate diagnostic reports.</li>
+                  <li>Delivering your reports securely via our Dashboard, WhatsApp, or Email.</li>
+                  <li>Communicating changes, offers, or billing invoices.</li>
+                </ul>
+              </div>
+
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-bold text-foreground mb-2">4. Data Security & Storage</h3>
+                <p>
+                  We implement robust technical and organizational security measures to protect your medical records. Your personal information and reports are stored securely in cloud-hosted databases with strict Row Level Security (RLS). No unauthorized third parties have access to your health details.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-foreground mb-2">5. Your Rights & Contacts</h3>
+                <p>
+                  You have the right to access your stored data, request deletions, or opt-out of notifications. For any questions or concerns regarding our privacy practices, please contact us at <strong>+91 7649885936</strong> or visit our center.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Still Need Help */}
       <section className="py-12 md:py-16 bg-primary/5">
         <div className="container text-center px-4">

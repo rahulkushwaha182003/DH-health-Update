@@ -39,24 +39,45 @@ const AuthPage = () => {
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   useEffect(() => {
-    // Check URL hash for OAuth errors
+    // Check URL hash or search params for OAuth errors
     const hash = window.location.hash;
+    const search = window.location.search;
+    let errorDesc: string | null = null;
+
     if (hash.includes("error_description=")) {
       const params = new URLSearchParams(hash.substring(1));
-      const errorDesc = params.get("error_description");
-      if (errorDesc) {
-        toast({
-          title: "Sign-In Error",
-          description: decodeURIComponent(errorDesc.replace(/\+/g, " ")),
-          variant: "destructive",
-        });
-        window.history.replaceState(null, "", window.location.pathname);
-      }
+      errorDesc = params.get("error_description");
+    } else if (search.includes("error_description=")) {
+      const params = new URLSearchParams(search);
+      errorDesc = params.get("error_description");
     }
+
+    if (errorDesc) {
+      toast({
+        title: "Sign-In Error",
+        description: decodeURIComponent(errorDesc.replace(/\+/g, " ")),
+        variant: "destructive",
+      });
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
+    const getTargetDestination = () => {
+      let dest = redirectTo || "/dashboard";
+      try {
+        const stored = localStorage.getItem("oauth_redirect_to");
+        if (stored) {
+          localStorage.removeItem("oauth_redirect_to");
+          dest = stored;
+        }
+      } catch {
+        // LocalStorage fallback
+      }
+      return dest.startsWith("/") ? dest : `/${dest}`;
+    };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate(redirectTo, { replace: true });
+        navigate(getTargetDestination(), { replace: true });
       }
     });
 
@@ -65,7 +86,7 @@ const AuthPage = () => {
         return;
       }
       if (session) {
-        navigate(redirectTo, { replace: true });
+        navigate(getTargetDestination(), { replace: true });
       }
     });
 
@@ -76,14 +97,24 @@ const AuthPage = () => {
     setIsGoogleLoading(true);
     try {
       const origin = window.location.origin;
-      const targetDestination = redirectTo && redirectTo !== "/" ? (redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`) : "";
-      const targetRedirect = `${origin}${targetDestination}`;
+      const targetDestination = redirectTo && redirectTo !== "/" ? redirectTo : "/dashboard";
+
+      try {
+        localStorage.setItem("oauth_redirect_to", targetDestination);
+      } catch {
+        // LocalStorage fallback
+      }
+
+      const targetRedirect = `${origin}/auth`;
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: targetRedirect,
-          skipBrowserRedirect: true,
+          queryParams: {
+            access_type: "offline",
+            prompt: "select_account",
+          },
         },
       });
 
@@ -93,26 +124,11 @@ const AuthPage = () => {
           description: error.message,
           variant: "destructive",
         });
+        setIsGoogleLoading(false);
         return;
       }
 
       if (data?.url) {
-        // Validate if Google provider is enabled before browser redirect
-        try {
-          const resp = await fetch(data.url);
-          if (resp.status >= 400) {
-            const errData = await resp.json().catch(() => ({}));
-            const msg = errData.msg || "Google Sign-In is not enabled yet in your Supabase project. Please configure Google provider in Supabase Dashboard.";
-            toast({
-              title: "Google Sign-In Not Configured",
-              description: msg,
-              variant: "destructive",
-            });
-            return;
-          }
-        } catch {
-          // If fetch fails due to CORS or network, proceed to redirect
-        }
         window.location.href = data.url;
       }
     } catch (error: any) {
@@ -121,7 +137,6 @@ const AuthPage = () => {
         description: error?.message || "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsGoogleLoading(false);
     }
   };

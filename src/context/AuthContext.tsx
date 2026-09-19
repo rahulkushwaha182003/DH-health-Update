@@ -70,6 +70,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAdmin(!roleRes.error && !!roleRes.data);
       if (profileRes.data) {
         setProfile(profileRes.data as UserProfile);
+      } else if (u) {
+        // Fallback for OAuth users (e.g. Google) whose profile row was not created via email signup form
+        const meta = u.user_metadata || {};
+        const fullName = (meta.full_name || meta.name || "").trim();
+        const nameParts = fullName.split(" ");
+        const firstName = meta.given_name || nameParts[0] || u.email?.split("@")[0] || "User";
+        const lastName = meta.family_name || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
+
+        const oAuthProfile: UserProfile = {
+          user_id: u.id,
+          first_name: firstName,
+          last_name: lastName,
+          email: u.email || null,
+        };
+        setProfile(oAuthProfile);
+
+        // Attempt silent background upsert into profiles table
+        supabase
+          .from("profiles")
+          .upsert({
+            user_id: u.id,
+            first_name: firstName,
+            last_name: lastName,
+            email: u.email || null,
+          })
+          .then(() => {}, () => {});
       }
     } catch (err) {
       console.error("[AuthContext] Error checking user role/profile:", err);

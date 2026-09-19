@@ -225,9 +225,11 @@ const parseBookingNotes = (notes: string | null | undefined, collectionAddress: 
     }
 
     if (hasValidLookup) {
+      const isDH = testType?.toLowerCase().includes("dh health package");
+      const calculatedHomeFee = isDH ? 0 : (calculatedPrice < 1000 ? 150 : 0);
       details.basePrice = calculatedPrice;
-      details.homeFee = calculatedPrice < 1000 ? 150 : 0;
-      details.totalPrice = calculatedPrice + (calculatedPrice < 1000 ? 150 : 0);
+      details.homeFee = calculatedHomeFee;
+      details.totalPrice = calculatedPrice + calculatedHomeFee;
       hasDetails = true;
     }
   }
@@ -576,7 +578,7 @@ const ProfileSection = ({ profile, user, onProfileUpdate }: { profile: Profile |
 /* ─── Main Dashboard ─── */
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, isAdmin, signOut } = useAuth();
+  const { user, loading: authLoading, isAdmin, signOut, profile: authProfile } = useAuth();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -597,12 +599,13 @@ const DashboardPage = () => {
         return;
       }
 
-      navigate("/auth");
+      navigate("/auth", { replace: true });
     }
   }, [user, authLoading, navigate]);
 
   const fetchData = useCallback(async () => {
     if (!user) {
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -649,7 +652,9 @@ const DashboardPage = () => {
       setInquiries(inqRes.data || []);
       setReports(reportsData);
       setTestBookings(bookingsRes.data || []);
-      setProfile(profileRes.data);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+      }
     } catch (error) {
       console.error("[DashboardPage] fetchData caught exception:", error);
       toast({ title: "Error", description: "Failed to load data.", variant: "destructive" });
@@ -659,8 +664,12 @@ const DashboardPage = () => {
   }, [user, toast]);
 
   useEffect(() => {
-    if (user) fetchData();
-  }, [user, fetchData]);
+    if (user) {
+      fetchData();
+    } else if (!authLoading) {
+      setLoading(false);
+    }
+  }, [user, authLoading, fetchData]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -695,15 +704,20 @@ const DashboardPage = () => {
     );
   }
 
+  if (!user) {
+    return null;
+  }
+
   const resultsReady = appointments.filter(a => a.results_status === "ready").length;
+  const userDisplayName = profile?.first_name || authProfile?.first_name || user.user_metadata?.first_name || user.email?.split('@')[0] || "DiagnosticsHub";
 
   return (
     <Layout>
       <SEOHead
         title="My Bookings"
-        description="View your test bookings, reports and profile at Diagnostics Hub Rewa."
+        description="View your test bookings, reports and profile on Diagnostics Hub."
         canonical="/dashboard"
-        keywords="patient dashboard, diagnostic reports, test bookings, pathology lab rewa"
+        robots="noindex, nofollow"
       />
 
       <section className="py-6 md:py-10 bg-gradient-to-b from-primary/5 to-background min-h-[calc(100vh-200px)]">
@@ -712,7 +726,7 @@ const DashboardPage = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                Welcome, DiagnosticsHub
+                Welcome, {userDisplayName}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Manage your test bookings, reports & profile
@@ -841,12 +855,14 @@ const DashboardPage = () => {
                         );
                       })}
                       {testBookings.map(booking => {
+                        const isDH = booking.test_name?.toLowerCase().includes("dh health package");
+                        const bookingHomeFee = isDH ? 0 : (booking.test_price < 1000 ? 150 : 0);
                         const parsedDetails = {
                           collectionAddress: booking.patient_address,
-                          userNotes: booking.notes || undefined,
+                          userNotes: (booking as any).notes || undefined,
                           basePrice: booking.test_price,
-                          homeFee: booking.test_price < 1000 ? 150 : 0,
-                          totalPrice: booking.test_price + (booking.test_price < 1000 ? 150 : 0)
+                          homeFee: bookingHomeFee,
+                          totalPrice: booking.test_price + bookingHomeFee
                         };
                         return (
                           <BookingRow

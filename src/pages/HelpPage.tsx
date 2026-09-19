@@ -20,46 +20,75 @@ const WHATSAPP_NUMBER = "917649885936";
 const INSTAGRAM_URL = "https://www.instagram.com/diagnostics_hub?igsh=MzNzanJpN2tlODhs";
 const TELEGRAM_BOT = "https://t.me/DiagnosticHub_bot";
 
-const faqs = [
+const faqGroups = [
   {
-    question: "How do I book an appointment?",
-    answer: "You can book an appointment through our website by visiting the 'Book Appointment' page, calling us at +91 7649885936, or messaging us on WhatsApp. You can also use our Telegram bot @DiagnosticHub_bot for 24/7 booking assistance."
+    title: "Test Booking",
+    faqs: [
+      {
+        question: "How do I book a blood test or health package?",
+        answer: "You can book an appointment through our website by visiting the Tests or Health Packages page, calling us at +91 7649885936, or messaging us on WhatsApp. You can also use our Telegram bot @DiagnosticHub_bot for 24/7 booking assistance."
+      },
+      {
+        question: "Is fasting required for diagnostic tests?",
+        answer: "Certain tests like Fasting Blood Sugar, Lipid Profile, and metabolic panels require 10-12 hours of overnight fasting. For routine tests like CBC, fasting is generally not needed. Specific preparation instructions are displayed on each test's detail page."
+      },
+      {
+        question: "Do you offer corporate or bulk testing?",
+        answer: "Yes, Diagnostics Hub provides tailored corporate health checkups and bulk diagnostic screenings for organizations across Madhya Pradesh. Contact us through our Quote Request page for custom arrangements."
+      }
+    ]
   },
   {
-    question: "What are your working hours?",
-    answer: "Our lab is open Monday to Saturday from 7:00 AM to 7:00 PM. We are closed on Sundays. For home collection, we recommend early morning appointments for fasting tests."
+    title: "Lab Selection",
+    faqs: [
+      {
+        question: "How does lab comparison work on Diagnostics Hub?",
+        answer: "Diagnostics Hub is an aggregator platform that lets you compare blood test prices, packages, and credentials from top trusted partner labs such as Dr. Lal PathLabs, Metropolis, Pathkind, and Bharat Lab all in one place."
+      },
+      {
+        question: "Are your partner tests and laboratories accurate and accredited?",
+        answer: "Diagnostics Hub partners exclusively with NABL-accredited and certified pathology laboratories. Our partner labs maintain the highest standards of quality, utilize advanced automated analyzers, and all test reports are verified by qualified pathologists."
+      }
+    ]
   },
   {
-    question: "Do you offer home sample collection?",
-    answer: "Yes, we offer home sample collection services for an additional fee of ₹150. Our trained phlebotomists will visit your home at your preferred time slot. You can book home collection through our website or by calling us."
+    title: "Home Sample Collection",
+    faqs: [
+      {
+        question: "How does home sample collection work?",
+        answer: "Trained and certified phlebotomists from our partner network visit your home at your selected time slot to collect samples following strict hygiene, cold-chain, and safety protocols."
+      },
+      {
+        question: "What are your operating hours for home collection?",
+        answer: "Our home collection slots are open Monday to Saturday from 7:00 AM to 7:00 PM. Early morning appointments are recommended for tests requiring overnight fasting."
+      }
+    ]
   },
   {
-    question: "How do I get my test results?",
-    answer: "Test results are available through multiple channels: 1) You can view them online through your patient dashboard after logging in, 2) We can send them via email, 3) WhatsApp delivery is also available, 4) You can collect a printed copy from our lab."
+    title: "Payments and Cancellation",
+    faqs: [
+      {
+        question: "What payment methods do you accept?",
+        answer: "We accept Cash on Collection, all major UPI apps (Google Pay, PhonePe, Paytm), credit/debit cards, and net banking."
+      },
+      {
+        question: "Can I cancel or reschedule my appointment?",
+        answer: "Yes, you can cancel or reschedule your booking by calling us at +91 7649885936 or messaging on WhatsApp at least 4 hours before your scheduled time slot."
+      }
+    ]
   },
   {
-    question: "Is fasting required for all tests?",
-    answer: "Not all tests require fasting. Tests like Lipid Profile, Glucose Fasting, and certain metabolic panels require 10-12 hours of fasting. Our team will inform you about specific requirements when you book your appointment."
-  },
-  {
-    question: "What payment methods do you accept?",
-    answer: "We accept cash, all major credit/debit cards, UPI payments (Google Pay, PhonePe, Paytm), and net banking. For corporate clients, we also offer credit facilities."
-  },
-  {
-    question: "How long does it take to get results?",
-    answer: "Most routine tests are completed within 24 hours. Some specialized tests may take 2-5 days. Urgent tests can be processed faster with additional charges. You'll be informed about the expected turnaround time when booking."
-  },
-  {
-    question: "Do you offer corporate health checkups?",
-    answer: "Yes, we offer comprehensive corporate health checkup packages. We can customize packages based on your organization's requirements and provide on-site testing facilities. Contact us through the Quote Request page for details."
-  },
-  {
-    question: "Are your tests accurate?",
-    answer: "Yes, we are a NABL accredited laboratory and maintain the highest standards of quality. We use advanced automated analyzers and follow strict quality control protocols. All results are verified by qualified pathologists."
-  },
-  {
-    question: "Can I cancel or reschedule my appointment?",
-    answer: "Yes, you can cancel or reschedule your appointment by calling us at +91 7649885936 or messaging us on WhatsApp at least 4 hours before your scheduled time. You can also manage appointments through your patient dashboard."
+    title: "Test Reports",
+    faqs: [
+      {
+        question: "How and when do I get my test results?",
+        answer: "Most routine test reports are completed within 12-24 hours. Verified digital PDF reports are delivered directly to your patient dashboard, email, and WhatsApp. Printed copies can also be requested."
+      },
+      {
+        question: "How do I check the status of my sample?",
+        answer: "You can track the real-time status of your test by entering your Booking Reference Number on our Results Inquiry page or checking your User Dashboard."
+      }
+    ]
   }
 ];
 
@@ -94,18 +123,18 @@ const HelpPage = () => {
   return (
     <Layout>
       <SEOHead
-        title="Help & Support"
-        description="Get help with Diagnostics Hub Rewa services. FAQs, contact support, book appointments, and get assistance with lab tests and reports."
+        title="Help & FAQs for Test Booking"
+        description="Find answers about test booking, lab selection, home sample collection, payments and reports, or contact the Diagnostics Hub support team."
         canonical="/help"
-        keywords="diagnostics hub help, pathology lab support rewa, lab test FAQ, contact diagnostics hub, pathology labs near me Rewa"
+        keywords="diagnostics hub help, test booking FAQ, lab selection Madhya Pradesh, home sample collection FAQ, test reports help"
       />
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-12 md:py-16">
         <div className="container text-center px-4">
           <HelpCircle className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">Help Center</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">Diagnostics Hub Help & FAQs</h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions or get in touch with our support team.
+            Find answers to common questions about test booking, partner labs, and home collection or get in touch with our support team.
           </p>
         </div>
       </section>
@@ -113,6 +142,7 @@ const HelpPage = () => {
       {/* Contact Options */}
       <section className="py-8 md:py-12">
         <div className="container px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Contact Support</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent className="p-4 md:p-6">
@@ -181,26 +211,36 @@ const HelpPage = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Categories Section */}
       <section className="py-12 md:py-16">
-        <div className="container max-w-3xl px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-left text-sm md:text-base">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground text-sm md:text-base">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
+        <div className="container max-w-3xl px-4 space-y-10">
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Frequently Asked Questions</h2>
+          </div>
+
+          {faqGroups.map((group, groupIdx) => (
+            <div key={groupIdx} className="space-y-4">
+              <h2 className="text-xl md:text-2xl font-bold text-[#003B73] border-b pb-2">
+                {group.title}
+              </h2>
+              <Card>
+                <CardContent className="p-4 md:p-6">
+                  <Accordion type="single" collapsible className="w-full">
+                    {group.faqs.map((faq, index) => (
+                      <AccordionItem key={index} value={`group-${groupIdx}-item-${index}`}>
+                        <AccordionTrigger className="text-left text-sm md:text-base font-semibold">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-muted-foreground text-sm md:text-base leading-relaxed">
+                          {faq.answer}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Home, Star, Award, Clock, Building, Package, Beaker, MapPin, CheckCircle, ChevronDown } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SEOHead from "@/components/SEOHead";
@@ -29,9 +30,10 @@ const LabSelectionPage = () => {
   return (
     <Layout>
       <SEOHead
-        title="Select Lab - Diagnostics Hub"
-        description="Choose from our partner diagnostic labs for quality healthcare services"
-        keywords="diagnostic lab, pathology lab, NABL certified, home collection, blood test, Rewa"
+        title="Select Lab"
+        description="Compare and select trusted partner diagnostic labs for blood tests and health packages across Madhya Pradesh."
+        canonical="/tests"
+        keywords="diagnostic lab, pathology lab, NABL certified partner labs, home collection, blood test, Madhya Pradesh"
       />
       
       <section className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8">
@@ -70,9 +72,9 @@ const LabSelectionPage = () => {
                   <div className="relative mb-4">
                     <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 p-1 shadow-inner">
                       <div className="w-full h-full rounded-xl bg-white flex items-center justify-center overflow-hidden">
-                        {lab.logoUrl ? (
+                        {(lab as any).logoUrl ? (
                           <img 
-                            src={lab.logoUrl} 
+                            src={(lab as any).logoUrl} 
                             alt={lab.name}
                             className="w-full h-full object-cover rounded-lg"
                             onError={(e) => {

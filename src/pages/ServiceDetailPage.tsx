@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
+import SEOHead from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,9 +31,9 @@ const servicesData = [
     icon: TestTube2,
     title: "Clinical Laboratory Testing",
     shortDesc: "Comprehensive diagnostic tests including blood chemistry, hematology, urinalysis, and immunology.",
-    fullDescription: `Our Clinical Laboratory Testing department is equipped with state-of-the-art automated analyzers that deliver precise and rapid results. We offer a comprehensive range of diagnostic tests essential for disease detection, monitoring, and prevention.
+    fullDescription: `Our partner clinical testing laboratories are equipped with state-of-the-art automated analyzers that deliver precise and rapid results. Compare and book a comprehensive range of diagnostic tests essential for disease detection, monitoring, and prevention.
 
-Our clinical laboratory operates under strict quality control measures and is staffed by experienced medical technologists who ensure accuracy in every test. We use advanced automation to minimize human error and maximize efficiency.`,
+Partner clinical laboratories operate under strict quality control measures and are staffed by experienced medical technologists and pathologists who ensure accuracy in every test. Automated systems minimize turnaround times and ensure high diagnostic reliability.`,
     tests: ["Complete Blood Count (CBC)", "Metabolic Panels (BMP, CMP)", "Urinalysis", "Coagulation Studies", "Serology Tests", "Electrolyte Panel", "Glucose Testing", "Hemoglobin A1C"],
     turnaround: "Same day - 24 hours",
     preparation: [
@@ -48,9 +49,9 @@ Our clinical laboratory operates under strict quality control measures and is st
     icon: Microscope,
     title: "Anatomic Pathology",
     shortDesc: "Expert tissue examination for accurate disease diagnosis.",
-    fullDescription: `Our Anatomic Pathology department specializes in examining tissue samples to diagnose diseases with precision. Our board-certified pathologists bring decades of combined experience in interpreting complex cases.
+    fullDescription: `Our partner anatomic pathology facilities specialize in examining tissue samples to diagnose diseases with precision. Board-certified pathologists at partner labs bring extensive expertise in interpreting complex biopsy and cytology cases.
 
-We provide comprehensive surgical pathology services including frozen sections for intraoperative consultation, helping surgeons make critical decisions during surgery. Our department is equipped with digital pathology capabilities for second opinions and teleconsultation.`,
+Access comprehensive surgical pathology services through trusted diagnostic partner labs, including biopsy evaluation, tumor analysis, and specialized stain reviews with home sample handover or center drop-off.`,
     tests: ["Surgical Pathology", "Frozen Sections", "Special Stains", "Consultation Services", "Biopsy Analysis", "Tumor Grading", "Margin Assessment"],
     turnaround: "2-5 working days",
     preparation: [
@@ -66,9 +67,9 @@ We provide comprehensive surgical pathology services including frozen sections f
     icon: HeartPulse,
     title: "Cardiac Markers",
     shortDesc: "Complete cardiac panel for heart health assessment.",
-    fullDescription: `Our Cardiac Markers panel provides essential biomarkers for diagnosing and monitoring heart conditions. Early detection of heart disease is crucial, and our comprehensive testing helps identify risk factors before they become critical.
+    fullDescription: `Compare and book cardiac risk markers and heart health panels with convenient home sample collection across Madhya Pradesh. Essential biomarkers help detect and monitor heart conditions and assess cardiovascular risk factors early.
 
-We offer rapid turnaround for emergency cardiac markers like Troponin, essential for diagnosing heart attacks. Our preventive cardiac panels help assess long-term cardiovascular risk.`,
+Partner labs offer rapid turnaround for routine and critical cardiac markers including Troponin, Lipid Profiles, and hs-CRP to support timely clinical decisions.`,
     tests: ["Troponin I & T", "BNP/NT-proBNP", "Lipid Profile", "hs-CRP", "Homocysteine", "Lipoprotein(a)", "D-Dimer", "CPK-MB"],
     turnaround: "Same day (Troponin: 1 hour STAT)",
     preparation: [
@@ -84,9 +85,9 @@ We offer rapid turnaround for emergency cardiac markers like Troponin, essential
     icon: Dna,
     title: "Molecular Diagnostics",
     shortDesc: "Advanced PCR and genetic testing technologies.",
-    fullDescription: `Our Molecular Diagnostics laboratory uses cutting-edge PCR, gene sequencing, and molecular testing technologies. This department is essential for accurate infectious disease detection, cancer marker identification, and genetic screening.
+    fullDescription: `Our certified partner laboratories use cutting-edge PCR, gene sequencing, and molecular testing technologies. Essential for infectious disease detection, viral load quantification, and genetic screening.
 
-We maintain the highest standards of molecular testing with validated assays and participate in external quality assurance programs to ensure our results meet international standards.`,
+Partner facilities adhere to rigorous molecular quality assurance and participate in external proficiency testing programs to ensure reliable diagnostic outcomes.`,
     tests: ["RT-PCR Testing", "Genetic Markers", "Infectious Disease Panels", "Pharmacogenomics", "HPV Genotyping", "COVID-19 PCR", "TB PCR", "Hepatitis Viral Load"],
     turnaround: "24-72 hours",
     preparation: [
@@ -102,9 +103,9 @@ We maintain the highest standards of molecular testing with validated assays and
     icon: Syringe,
     title: "Cytopathology",
     shortDesc: "Specialized cell analysis for cancer screening.",
-    fullDescription: `Our Cytopathology department provides expert analysis of cellular samples for cancer screening and diagnosis. We specialize in Pap smears, fine needle aspiration cytology (FNAC), and body fluid analysis.
+    fullDescription: `Experienced partner laboratories provide expert analysis of cellular samples for cancer screening and early diagnosis. Book Pap smears, fine needle aspiration cytology (FNAC), and body fluid evaluations.
 
-Our cytopathologists are trained in the latest techniques for early cancer detection. We use liquid-based cytology for improved specimen quality and more accurate results.`,
+Partner cytopathologists utilize standard and liquid-based cytology methods for enhanced specimen quality and diagnostic accuracy across Madhya Pradesh.`,
     tests: ["Pap Smears", "FNAC", "Body Fluid Cytology", "Thyroid FNA", "Breast FNA", "Lymph Node FNA", "Pleural Fluid Analysis"],
     turnaround: "2-3 working days",
     preparation: [
@@ -120,9 +121,9 @@ Our cytopathologists are trained in the latest techniques for early cancer detec
     icon: FileSearch,
     title: "Histopathology",
     shortDesc: "Detailed tissue examination with immunohistochemistry.",
-    fullDescription: `Our Histopathology department offers comprehensive tissue analysis services including routine histology, special stains, and immunohistochemistry (IHC). We use the latest tissue processing techniques for optimal specimen quality.
+    fullDescription: `Accredited diagnostic partner labs offer comprehensive tissue analysis services including routine histology, special stains, and immunohistochemistry (IHC) markers for precise tumor typing and treatment planning.
 
-Our IHC panel helps in precise cancer typing, which is essential for treatment planning. We offer digital pathology services for remote consultation and second opinions.`,
+Consultations and biopsy examinations are performed by certified pathologists with digital reporting options for fast and seamless access.`,
     tests: ["Tissue Biopsies", "IHC Markers", "Special Stains", "Digital Pathology", "Cancer Grading", "ER/PR/HER2", "Ki-67", "Tumor Markers"],
     turnaround: "3-7 working days",
     preparation: [
@@ -207,6 +208,39 @@ Antibiotic sensitivity testing helps physicians prescribe the most effective tre
   }
 ];
 
+const serviceSeoMap: Record<string, { title: string; description: string; h1: string }> = {
+  clinical: {
+    title: "Clinical Laboratory Testing Services in MP",
+    description: "Book routine and advanced clinical lab tests including CBC, lipid profile, liver function and kidney function with home collection in MP.",
+    h1: "Clinical Laboratory Testing Services"
+  },
+  anatomic: {
+    title: "Anatomic Pathology Services in MP",
+    description: "Access specialized anatomic pathology, biopsy evaluation and surgical pathology services through trusted diagnostic partner labs across MP.",
+    h1: "Anatomic Pathology Services"
+  },
+  cardiac: {
+    title: "Cardiac Diagnostic Testing Services in MP",
+    description: "Compare and book cardiac risk markers and heart health panels with convenient home sample collection across Madhya Pradesh.",
+    h1: "Cardiac Diagnostic Testing Services"
+  },
+  molecular: {
+    title: "Molecular Diagnostics & PCR Testing in MP",
+    description: "Explore molecular diagnostics, RT-PCR testing, viral load assays and genetic screening from certified partner laboratories in MP.",
+    h1: "Molecular Diagnostics & PCR Testing"
+  },
+  cytopathology: {
+    title: "Cytopathology & Cancer Screening Services in MP",
+    description: "Book Pap smears, FNAC and cellular diagnostic evaluations through experienced partner laboratories across Madhya Pradesh.",
+    h1: "Cytopathology & Cancer Screening Services"
+  },
+  histopathology: {
+    title: "Histopathology & Biopsy Testing Services in MP",
+    description: "Accurate histopathology, biopsy examination and immunohistochemistry services through accredited diagnostic partner labs in MP.",
+    h1: "Histopathology & Biopsy Testing Services"
+  }
+};
+
 const ServiceDetailPage = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
@@ -230,9 +264,19 @@ const ServiceDetailPage = () => {
   }
 
   const Icon = service.icon;
+  const currentSeo = (serviceId && serviceSeoMap[serviceId]) || {
+    title: `${service.title} in MP`,
+    description: `${service.shortDesc} Book home sample collection through trusted partner labs across Madhya Pradesh.`,
+    h1: service.title
+  };
 
   return (
     <Layout>
+      <SEOHead
+        title={currentSeo.title}
+        description={currentSeo.description}
+        canonical={`/services/${serviceId}`}
+      />
       <section className="py-6 md:py-8 bg-gradient-to-br from-primary/5 to-secondary/5">
         <div className="container px-4">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 md:mb-6">
@@ -248,7 +292,7 @@ const ServiceDetailPage = () => {
                   <Icon className="h-7 w-7 md:h-8 md:w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">{service.title}</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">{currentSeo.h1}</h1>
                   <p className="text-muted-foreground mt-2">{service.shortDesc}</p>
                 </div>
               </div>

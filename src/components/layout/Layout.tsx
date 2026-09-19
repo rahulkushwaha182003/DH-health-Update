@@ -8,9 +8,10 @@ import CartStickyBanner from "../ui/CartStickyBanner";
 
 interface LayoutProps {
   children: ReactNode;
+  hideFooter?: boolean;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children, hideFooter = false }: LayoutProps) => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,7 +85,7 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
 
-      <Footer />
+      {!hideFooter && location.pathname !== "/health-packages" && <Footer />}
       {location.pathname !== "/book-appointment" && <WhatsAppWidget />}
       {location.pathname !== "/book-appointment" && <CartStickyBanner />}
     </div>

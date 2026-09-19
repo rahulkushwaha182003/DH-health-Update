@@ -19,8 +19,8 @@ const Index = () => {
   return (
     <>
       <SEOHead
-        title="Blood Test & Diagnostic Services Across MP | Diagnostics Hub"
-        description="Book blood tests, full body checkups and home sample collection across Madhya Pradesh through Diagnostics Hub's verified partner lab network."
+        title="Book Blood Tests at Home Across MP"
+        description="Compare blood tests and health packages from trusted diagnostic lab partners. Book convenient home sample collection across Madhya Pradesh."
         canonical="/"
         keywords="online blood test booking in Madhya Pradesh, blood test MP, diagnostic services Madhya Pradesh, full body checkup MP, home sample collection Madhya Pradesh, pathology lab MP, NABL lab Madhya Pradesh, blood test centers MP, diagnostic labs in MP, health checkup packages Madhya Pradesh"
       />

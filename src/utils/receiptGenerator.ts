@@ -75,7 +75,7 @@ export const generateReceipt = async (data: ReceiptData) => {
     doc.setFontSize(8.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(120, 120, 120);
-    doc.text("Email: support@diagnosticshub.com", margin, footerY + 11.5);
+    doc.text("Email: support@diagnosticshub.in", margin, footerY + 11.5);
 
     // Right side: Branding & Tagline
     doc.setFontSize(9.5);

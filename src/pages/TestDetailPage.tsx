@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
+import SEOHead from "@/components/SEOHead";
 import { useState } from "react";
 import { RemoveConfirmDialog } from "@/components/ui/RemoveConfirmDialog";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,23 @@ import { pathkindTests } from "@/data/pathkindTests";
 import { bharatTests } from "@/data/bharatTests";
 import { formatINR, generateSlug, tests as genericTests, packages } from "@/data/testsData";
 import { useCart } from "@/context/CartContext";
+
+const toTitleCase = (str: string): string => {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map(word => {
+      if (word.startsWith("(") && word.endsWith(")")) {
+        return word.toUpperCase();
+      }
+      if (/^[0-9]+[a-z]*$/i.test(word)) {
+        return word.toUpperCase();
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+};
 
 const TestDetailPage = () => {
   const { testSlug } = useParams();
@@ -113,11 +131,18 @@ const TestDetailPage = () => {
     );
   }
 
+  const displayName = toTitleCase(test.name);
   const parametersCount = test.includedTests ? test.includedTests.length :
     (isPackage && test.tests ? test.tests.length : Math.floor((test.price || 400) / 40) + 5);
 
   return (
     <Layout>
+      <SEOHead
+        title={`${displayName} Price & Lab Booking in MP`}
+        description={test.description || `Compare ${displayName} prices from NABL-accredited partner labs and book doorstep sample collection across Madhya Pradesh with Diagnostics Hub.`}
+        canonical={`/test/${testSlug}`}
+        keywords={`${displayName.toLowerCase()}, ${displayName.toLowerCase()} price MP, book ${displayName.toLowerCase()} online, diagnostic partner labs Rewa`}
+      />
       <div className="bg-slate-50 min-h-screen pb-12">
         {/* Breadcrumb Navigation */}
         <div className="container max-w-5xl mx-auto px-4 py-4 mb-2">
@@ -127,7 +152,7 @@ const TestDetailPage = () => {
               Home
             </button>
             <span className="mx-2">/</span>
-            <span className="text-slate-800 capitalize">{test.name.toLowerCase()}</span>
+            <span className="text-slate-800">{displayName}</span>
           </div>
         </div>
 
@@ -136,8 +161,8 @@ const TestDetailPage = () => {
           <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-6 sm:p-8 flex flex-col md:flex-row justify-between gap-6">
               <div className="flex-1 space-y-4">
-                <h1 className="text-xl font-bold text-slate-800 uppercase leading-snug">
-                  {test.name}
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800 leading-snug">
+                  {displayName}
                 </h1>
 
                 <p className="text-[#003B73] font-medium text-sm">

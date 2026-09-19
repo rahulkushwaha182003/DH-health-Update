@@ -22,14 +22,14 @@ const services = [
     id: "clinical",
     icon: TestTube2,
     title: "Clinical Laboratory Testing",
-    description: "Our comprehensive clinical laboratory provides a wide range of diagnostic tests including blood chemistry, hematology, urinalysis, and immunology. We use advanced automated analyzers to ensure accuracy and rapid turnaround times.",
+    description: "Comprehensive diagnostic testing offered through our trusted partner laboratories including blood chemistry, hematology, urinalysis, and immunology with advanced automated analyzers and rapid turnaround times.",
     tests: ["Complete Blood Count", "Metabolic Panels", "Urinalysis", "Coagulation Studies", "Serology Tests"]
   },
   {
     id: "anatomic",
     icon: Microscope,
     title: "Anatomic Pathology",
-    description: "Expert pathologists examine tissue samples to diagnose diseases. Our surgical pathology services cover biopsies, tumor analysis, and frozen sections for intraoperative consultations.",
+    description: "Expert pathologists at partner labs examine tissue samples to diagnose diseases. Surgical pathology services cover biopsies, tumor analysis, and frozen sections for intraoperative consultations.",
     tests: ["Surgical Pathology", "Frozen Sections", "Special Stains", "Consultation Services"]
   },
   {
@@ -50,14 +50,14 @@ const services = [
     id: "cytopathology",
     icon: Syringe,
     title: "Cytopathology",
-    description: "Specialized cell analysis for cancer screening and diagnosis. Our cytopathology lab provides Pap smears, fine needle aspiration cytology, and body fluid analysis.",
+    description: "Specialized cell analysis for cancer screening and diagnosis through accredited partner laboratories. Services provide Pap smears, fine needle aspiration cytology, and body fluid analysis.",
     tests: ["Pap Smears", "FNAC", "Body Fluid Cytology", "Thyroid FNA"]
   },
   {
     id: "histopathology",
     icon: FileSearch,
     title: "Histopathology",
-    description: "Detailed tissue examination by board-certified pathologists. Immunohistochemistry services for precise cancer typing and treatment planning.",
+    description: "Detailed tissue examination by board-certified pathologists at partner laboratories. Immunohistochemistry services for precise cancer typing and treatment planning.",
     tests: ["Tissue Biopsies", "IHC Markers", "Special Stains", "Digital Pathology"]
   },
   {
@@ -94,16 +94,16 @@ const ServicesPage = () => {
   return (
     <Layout>
       <SEOHead
-        title="Diagnostic Services - Lab Tests & Pathology"
-        description="Comprehensive diagnostic services at Diagnostics Hub Rewa - clinical lab testing, molecular diagnostics, cardiac markers, histopathology & more. Book now!"
+        title="Diagnostic Services in Madhya Pradesh"
+        description="Explore blood tests, preventive checkups and specialised diagnostic services from trusted partner labs with home sample collection across MP."
         canonical="/services"
-        keywords="diagnostic services rewa, pathology services, clinical lab testing, molecular diagnostics, cardiac markers, blood test labs Rewa, diagnostic centers Rewa Madhya Pradesh, trusted diagnostic lab India"
+        keywords="diagnostic services MP, blood test services Madhya Pradesh, pathology services MP, clinical lab testing, molecular diagnostics, cardiac markers, partner diagnostic labs"
       />
       <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-12 md:py-16">
         <div className="container text-center px-4">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">Our Services</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">Explore Diagnostic Services from Trusted Partner Labs</h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive diagnostic services powered by cutting-edge technology and expert pathologists. Click on any service to learn more.
+            Comprehensive diagnostic services offered through our verified partner pathology labs across Madhya Pradesh. Click on any service to learn more.
           </p>
         </div>
       </section>

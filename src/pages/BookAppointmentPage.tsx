@@ -133,7 +133,18 @@ const BookTestPage = () => {
     ? totalAmount
     : (preselectedTotal ? parseInt(preselectedTotal) : (selectedTestData?.price || 0));
 
-  const homeFee = selectedPrice > 0 && selectedPrice < 1000 ? 150 : 0;
+  const isDHHealthPackage = () => {
+    if (isCartMode && cartItems.length > 0) {
+      return cartItems.some(
+        item => item.id?.startsWith("pkg-") || item.name?.toLowerCase().includes("dh health package")
+      );
+    }
+    const testName = (form.watch("testType") || preselectedTest || preselectedTests || "").toLowerCase();
+    return testName.includes("dh health package") || testName.includes("full body profile");
+  };
+
+  const isDH = isDHHealthPackage();
+  const homeFee = isDH ? 0 : (selectedPrice > 0 && selectedPrice < 1000 ? 150 : 0);
   const sampleCollection = form.watch("sampleCollection");
   const totalWithFee = sampleCollection === 'home' ? selectedPrice + homeFee : selectedPrice;
 
@@ -167,13 +178,13 @@ const BookTestPage = () => {
       }
 
 
-      const homeFee = data.sampleCollection === 'home' && selectedPrice < 1000 ? 150 : 0;
+      const homeFee = data.sampleCollection === 'home' ? (isDH ? 0 : (selectedPrice < 1000 ? 150 : 0)) : 0;
       const totalAmt = selectedPrice + homeFee;
 
       const nameParts = data.fullName.trim().split(/\s+/);
       const fName = nameParts[0] || "";
       const lName = nameParts.slice(1).join(" ") || "Patient";
-      const uEmail = session?.user?.email || "not-provided@diagnosticshub.com";
+      const uEmail = session?.user?.email || "not-provided@diagnosticshub.in";
       const bookedAtString = format(new Date(), "dd MMM yyyy, hh:mm a");
 
       const { error } = await supabase.from("appointments").insert({
@@ -355,9 +366,9 @@ const BookTestPage = () => {
     <Layout>
       <SEOHead
         title="Book Test"
-        description="Book your diagnostic test at Diagnostics Hub Rewa. Choose from 100+ tests with home sample collection. Easy online booking with instant confirmation."
+        description="Book diagnostic tests and health packages with convenient home sample collection across Madhya Pradesh."
         canonical="/book-appointment"
-        keywords="book lab test rewa, diagnostic test rewa, home sample collection booking Rewa MP, pathology test booking, online blood test booking India"
+        robots="noindex, nofollow"
       />
       {/* Premium page-specific background wrapper */}
       <div className="bg-gradient-to-b from-[#F3F7FA] via-[#E9F0F3] to-[#F1F6F8] min-h-screen relative overflow-hidden pb-16">
@@ -463,7 +474,9 @@ const BookTestPage = () => {
                             <p className="text-sm font-bold text-primary">{formatINR(selectedPrice)}</p>
                             {sampleCollection === 'home' && (
                               <>
-                                <p className="text-xs text-muted-foreground">+{formatINR(homeFee)} home collection fee</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {homeFee > 0 ? `+${formatINR(homeFee)} home collection fee` : 'FREE home collection'}
+                                </p>
                                 <p className="text-xs text-muted-foreground font-bold">Total: {formatINR(totalWithFee)}</p>
                               </>
                             )}

@@ -26,3 +26,5 @@ dist-ssr
 # .env is now included in the repo as per user request
 
 temp-hub/
+*.tsbuildinfo
+.env.backup

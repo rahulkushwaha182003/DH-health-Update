@@ -185,9 +185,9 @@ const ResultsInquiryPage = () => {
     <Layout>
       <SEOHead
         title="Check Test Results - Result Inquiry"
-        description="Check your diagnostic test results online at Diagnostics Hub Rewa. Enter your reference number to track your lab report status."
+        description="Check your diagnostic test results online at Diagnostics Hub. Enter your reference number to track your lab report status."
         canonical="/results-inquiry"
-        keywords="check lab results Rewa, test report status, diagnostic results online, pathology report inquiry"
+        robots="noindex, follow"
       />
       <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-8 md:py-12">
         <div className="container relative px-4">

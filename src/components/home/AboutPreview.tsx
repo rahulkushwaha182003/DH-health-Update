@@ -3,17 +3,17 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Users, Building2, Award } from "lucide-react";
 
 const highlights = [
-  "NABL Accredited Laboratory",
-  "Experienced Team of 50+ Specialists",
-  "24/7 Emergency Services",
+  "NABL-Accredited Partner Labs",
+  "Trusted Diagnostic Networks",
+  "Convenient Booking Support",
   "Home Sample Collection Available",
   "Digital Reports & Online Access",
-  "Quality Assured Processes"
+  "Transparent Price Comparison"
 ];
 
 const stats = [
   { icon: Users, value: "50,000+", label: "Patients Served" },
-  { icon: Building2, value: "15+", label: "Years Experience" },
+  { icon: Building2, value: "Top Labs", label: "Partner Network" },
   { icon: Award, value: "500+", label: "Tests Available" }
 ];
 
@@ -26,13 +26,13 @@ const AboutPreview = () => {
           <div>
             <p className="text-secondary font-semibold mb-2">ABOUT US</p>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
-              Your Trusted Partner in Diagnostic Healthcare
+              Your Trusted Diagnostic Booking Platform
             </h2>
             <p className="text-muted-foreground mb-6">
-              PathLab Diagnostic Center has been at the forefront of pathology services for over 15 years. Our commitment to accuracy, quick turnaround times, and patient care has made us the preferred choice for healthcare providers and patients alike.
+              Diagnostics Hub connects users with trusted diagnostic lab partners, helps them compare tests and prices, and simplifies home sample collection booking across Madhya Pradesh.
             </p>
             <p className="text-muted-foreground mb-8">
-              With state-of-the-art equipment and a team of experienced pathologists, we provide comprehensive diagnostic solutions that help in early detection, accurate diagnosis, and effective treatment monitoring.
+              We partner with certified diagnostic centers to bring you wide test options, transparent pricing, and fast report delivery right from the comfort of your home.
             </p>
 
             {/* Highlights Grid */}
@@ -72,9 +72,9 @@ const AboutPreview = () => {
                 <Award className="h-8 w-8 text-secondary-foreground" />
               </div>
               <div>
-                <h4 className="font-semibold text-foreground">NABL Accredited</h4>
+                <h4 className="font-semibold text-foreground">NABL-Accredited Partner Labs</h4>
                 <p className="text-sm text-muted-foreground">
-                  National Accreditation Board for Testing and Calibration Laboratories certified.
+                  All tests are processed by certified, quality-assured partner diagnostic laboratories.
                 </p>
               </div>
             </div>

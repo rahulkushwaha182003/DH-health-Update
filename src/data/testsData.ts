@@ -235,7 +235,7 @@ export const packages = [
   {
     name: "DH Health Package 2",
     mrp: 4500,
-    price: 1550,
+    price: 1399,
     tests: [
       "CBC + ESR (26)",
       "Liver Function Test (11)",
@@ -244,7 +244,7 @@ export const packages = [
       "Thyroid Function Test (3)",
       "Fasting Blood Sugar",
       "Iron Profile (4)",
-      "Diabetes (3)",
+      "HbA1C (Glycosylated Haemoglobin) (2)",
       "Urine Routine & Microscopic Examination (23)"
     ],
     description: "Full Body Checkup"
@@ -252,7 +252,7 @@ export const packages = [
   {
     name: "DH Health Package 3",
     mrp: 3050,
-    price: 1099,
+    price: 999,
     tests: [
       "CBC + ESR (26 Tests)",
       "Liver Function Test (11)",

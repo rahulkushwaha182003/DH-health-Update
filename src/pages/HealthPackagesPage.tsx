@@ -6,13 +6,13 @@ const HealthPackagesPage = () => {
   return (
     <>
       <SEOHead
-        title="DH Health Packages - Comprehensive Health Checkups"
-        description="Diagnostics Hub Rewa - Affordable health packages including Full Body Checkup, Diabetes Care, Heart Health, Women's Health, and Senior Citizen packages."
+        title="Health Checkup Packages in MP"
+        description="Explore affordable health checkup packages from trusted diagnostic lab partners and book convenient home sample collection across Madhya Pradesh."
         canonical="/health-packages"
-        keywords="health packages rewa, full body checkup rewa, diabetes package rewa, heart health package rewa, women health checkup rewa, senior citizen health package, affordable health tests"
+        keywords="health checkup packages MP, full body checkup Madhya Pradesh, preventive health packages, blood test packages Rewa, partner labs health checkup"
       />
-      <Layout>
-        <HealthPackages />
+      <Layout hideFooter={true}>
+        <HealthPackages isPage={true} />
       </Layout>
     </>
   );

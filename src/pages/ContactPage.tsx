@@ -123,10 +123,10 @@ const ContactPage = () => {
   return (
     <Layout>
       <SEOHead
-        title="Contact Us - Diagnostics Hub Rewa"
-        description="Contact Diagnostics Hub Rewa for appointments, test inquiries & home sample collection. Call +91 7649885936 or visit us at Karahiya No.1, Rewa, MP 486001."
+        title="Contact Us for Blood Test Booking"
+        description="Contact Diagnostics Hub for test booking, lab comparison, prescription assistance and home sample collection support across Madhya Pradesh."
         canonical="/contact"
-        keywords="contact diagnostics hub rewa, pathology lab phone number, lab address rewa, blood test labs Rewa, diagnostic centers Rewa Madhya Pradesh"
+        keywords="contact diagnostics hub, blood test booking contact MP, pathology lab support Rewa, home sample collection helpline Madhya Pradesh"
       />
       <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-12 md:py-16">
         <div className="container relative px-4">
@@ -140,7 +140,7 @@ const ContactPage = () => {
             <span className="font-semibold">Back</span>
           </Button>
           <div className="text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">Contact Us</h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">Contact Diagnostics Hub</h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
               Have questions? We're here to help. Reach out to us through any of the channels below.
             </p>
@@ -153,6 +153,23 @@ const ContactPage = () => {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Contact Info */}
             <div className="space-y-4 md:space-y-6">
+              <Card>
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Official Email</h3>
+                      <a href="mailto:support@diagnosticshub.in" className="text-muted-foreground hover:text-primary font-medium text-sm break-all">
+                        support@diagnosticshub.in
+                      </a>
+                      <p className="text-xs text-muted-foreground mt-1">24-hour response time</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-start gap-4">

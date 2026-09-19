@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
+import SEOHead from "@/components/SEOHead";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,38 +31,107 @@ const AuthPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Password Reset States
-  const [showResetForm, setShowResetForm] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(() => searchParams.get("reset") === "true");
   const [resetEmail, setResetEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [resetNewPassword, setResetNewPassword] = useState("");
-  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
-  const [showResetNewPassword, setShowResetNewPassword] = useState(false);
-  const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   useEffect(() => {
-    // Listen for auth changes (including INITIAL_SESSION)
+    // Check URL hash for OAuth errors
+    const hash = window.location.hash;
+    if (hash.includes("error_description=")) {
+      const params = new URLSearchParams(hash.substring(1));
+      const errorDesc = params.get("error_description");
+      if (errorDesc) {
+        toast({
+          title: "Sign-In Error",
+          description: decodeURIComponent(errorDesc.replace(/\+/g, " ")),
+          variant: "destructive",
+        });
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate(redirectTo, { replace: true });
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
-        // Don't redirect - let them go to reset-password page
         return;
       }
       if (session) {
-        navigate(redirectTo);
+        navigate(redirectTo, { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, redirectTo]);
+  }, [navigate, redirectTo, toast]);
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const origin = window.location.origin;
+      const targetDestination = redirectTo && redirectTo !== "/" ? (redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`) : "";
+      const targetRedirect = `${origin}${targetDestination}`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: targetRedirect,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: "Google Sign-In Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.url) {
+        // Validate if Google provider is enabled before browser redirect
+        try {
+          const resp = await fetch(data.url);
+          if (resp.status >= 400) {
+            const errData = await resp.json().catch(() => ({}));
+            const msg = errData.msg || "Google Sign-In is not enabled yet in your Supabase project. Please configure Google provider in Supabase Dashboard.";
+            toast({
+              title: "Google Sign-In Not Configured",
+              description: msg,
+              variant: "destructive",
+            });
+            return;
+          }
+        } catch {
+          // If fetch fails due to CORS or network, proceed to redirect
+        }
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Google Sign-In Error",
+        description: error?.message || "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
       });
@@ -77,6 +147,9 @@ const AuthPage = () => {
           title: "Welcome back!",
           description: "You have been logged in successfully.",
         });
+        if (data?.session) {
+          navigate(redirectTo, { replace: true });
+        }
       }
     } catch (error: any) {
       toast({
@@ -113,7 +186,7 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
         options: {
@@ -140,10 +213,18 @@ const AuthPage = () => {
           });
         }
       } else {
-        toast({
-          title: "Account created!",
-          description: "Welcome to Diagnostics Hub. Please check your email to verify your account.",
-        });
+        if (data?.session) {
+          toast({
+            title: "Welcome!",
+            description: "Account created and logged in successfully.",
+          });
+          navigate(redirectTo, { replace: true });
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Welcome to Diagnostics Hub. Please check your email or log in.",
+          });
+        }
       }
     } catch (error: any) {
       toast({
@@ -164,65 +245,20 @@ const AuthPage = () => {
     }
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail);
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       if (error) {
         toast({ title: "Reset Failed", description: error.message, variant: "destructive" });
       } else {
         setResetSent(true);
-        toast({ title: "Verification Code Sent!", description: "Check your email for the password reset code." });
+        toast({ 
+          title: "Reset Link Sent!", 
+          description: "We've sent a password reset link to your email." 
+        });
       }
     } catch {
       toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyAndReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpCode || !resetNewPassword || !resetConfirmPassword) {
-      toast({ title: "Fields Required", description: "Please fill in all fields.", variant: "destructive" });
-      return;
-    }
-
-    if (resetNewPassword !== resetConfirmPassword) {
-      toast({ title: "Passwords Don't Match", description: "Passwords do not match.", variant: "destructive" });
-      return;
-    }
-
-    if (resetNewPassword.length < 6) {
-      toast({ title: "Password Too Short", description: "Password must be at least 6 characters.", variant: "destructive" });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Step 1: Verify the OTP code
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: resetEmail,
-        token: otpCode,
-        type: 'recovery'
-      });
-
-      if (verifyError) {
-        toast({ title: "Invalid Code", description: verifyError.message, variant: "destructive" });
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 2: Update the user's password
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: resetNewPassword
-      });
-
-      if (updateError) {
-        toast({ title: "Update Failed", description: updateError.message, variant: "destructive" });
-      } else {
-        toast({ title: "Success!", description: "Your password has been reset successfully. You are now logged in." });
-        navigate(redirectTo);
-      }
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "An unexpected error occurred.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -232,14 +268,17 @@ const AuthPage = () => {
     setShowResetForm(false);
     setResetSent(false);
     setResetEmail("");
-    setOtpCode("");
-    setResetNewPassword("");
-    setResetConfirmPassword("");
   };
 
   if (showResetForm) {
     return (
       <Layout>
+        <SEOHead
+          title="Reset Password"
+          description="Reset your Diagnostics Hub account password."
+          canonical="/auth"
+          robots="noindex, nofollow"
+        />
         <section className="py-12 md:py-16 bg-gradient-to-br from-primary/5 to-secondary/5 min-h-[calc(100vh-200px)]">
           <div className="container max-w-md px-4">
             <Card>
@@ -252,98 +291,57 @@ const AuthPage = () => {
                 <CardTitle className="text-xl md:text-2xl">Reset Password</CardTitle>
                 <CardDescription>
                   {resetSent 
-                    ? "Enter the 6-digit verification code and your new password" 
-                    : "Enter your email to receive a password reset code"}
+                    ? "We've sent a reset link to your email address" 
+                    : "Enter your email to receive a password reset link"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {resetSent ? (
-                  <form onSubmit={handleVerifyAndReset} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="otp-code">Verification Code (6-digit)</Label>
-                      <Input
-                        id="otp-code"
-                        type="text"
-                        placeholder="123456"
-                        maxLength={6}
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        required
-                        className="text-center tracking-widest text-lg font-bold"
-                      />
+                  <div className="space-y-6 text-center py-2">
+                    <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                      <CheckCircle2 className="h-8 w-8 text-emerald-600" />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="reset-new-password">New Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="reset-new-password"
-                          type={showResetNewPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="pl-10 pr-10"
-                          value={resetNewPassword}
-                          onChange={(e) => setResetNewPassword(e.target.value)}
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowResetNewPassword(!showResetNewPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
-                        >
-                          {showResetNewPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
+                      <h3 className="font-bold text-lg text-foreground">Check Your Email</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        We've sent a password reset link to <strong className="text-foreground">{resetEmail}</strong>.
+                      </p>
+                      <p className="text-xs text-muted-foreground bg-muted/60 p-3 rounded-lg border border-border leading-relaxed">
+                        Click the link in the email to reset your password. If you don't see it, please check your spam or junk folder.
+                      </p>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-confirm-password">Confirm Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="reset-confirm-password"
-                          type={showResetConfirmPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="pl-10 pr-10"
-                          value={resetConfirmPassword}
-                          onChange={(e) => setResetConfirmPassword(e.target.value)}
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowResetConfirmPassword(!showResetConfirmPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground transition-colors"
-                        >
-                          {showResetConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
+                    <div className="space-y-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={handlePasswordReset}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Resending...</>
+                        ) : (
+                          "Resend Email Link"
+                        )}
+                      </Button>
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Resetting...</>
-                      ) : (
-                        "Reset Password"
-                      )}
-                    </Button>
-                    <Button type="button" variant="ghost" className="w-full" onClick={resetForgotPassword}>
-                      <ArrowLeft className="h-4 w-4 mr-2" />Back to Login
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-full"
+                        onClick={resetForgotPassword}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />Back to Login
+                      </Button>
+                    </div>
 
                     <div className="text-center pt-2 border-t text-xs text-muted-foreground">
-                      <p>If you don't receive the email code, contact support at</p>
+                      <p>Need assistance? Contact support at</p>
                       <a href="tel:+917649885936" className="font-bold text-primary hover:underline">+91 7649885936</a>
-                      <p>to reset your password instantly.</p>
                     </div>
-                  </form>
+                  </div>
                 ) : (
                   <form onSubmit={handlePasswordReset} className="space-y-4">
                     <div className="space-y-2">
@@ -365,7 +363,7 @@ const AuthPage = () => {
                       {isLoading ? (
                         <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
                       ) : (
-                        <><Mail className="h-4 w-4 mr-2" />Send Reset Code</>
+                        <><Mail className="h-4 w-4 mr-2" />Send Reset Link</>
                       )}
                     </Button>
                     <Button type="button" variant="ghost" className="w-full" onClick={resetForgotPassword}>
@@ -373,9 +371,8 @@ const AuthPage = () => {
                     </Button>
 
                     <div className="text-center pt-2 border-t text-xs text-muted-foreground">
-                      <p>If you don't receive the email code, contact support at</p>
+                      <p>Need assistance? Contact support at</p>
                       <a href="tel:+917649885936" className="font-bold text-primary hover:underline">+91 7649885936</a>
-                      <p>to reset your password instantly.</p>
                     </div>
                   </form>
                 )}
@@ -389,6 +386,12 @@ const AuthPage = () => {
 
   return (
     <Layout>
+      <SEOHead
+        title="Patient Login & Register"
+        description="Login or create an account with Diagnostics Hub to view test reports and manage appointments."
+        canonical="/auth"
+        robots="noindex, nofollow"
+      />
       <section className="py-12 md:py-16 bg-gradient-to-br from-primary/5 to-secondary/5 min-h-[calc(100vh-200px)]">
         <div className="container max-w-md px-4">
           <Card>
@@ -416,30 +419,25 @@ const AuthPage = () => {
                       type="button"
                       variant="outline"
                       className="w-full"
-                      disabled={isLoading}
-                      onClick={async () => {
-                        const { error } = await supabase.auth.signInWithOAuth({
-                          provider: "google",
-                          options: {
-                            redirectTo: window.location.origin,
-                          },
-                        });
-                        if (error) {
-                          toast({
-                            title: "Google Sign-In Failed",
-                            description: String(error),
-                            variant: "destructive",
-                          });
-                        }
-                      }}
+                      disabled={isLoading || isGoogleLoading}
+                      onClick={handleGoogleLogin}
                     >
-                      <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                      </svg>
-                      Continue with Google
+                      {isGoogleLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Connecting to Google...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                          </svg>
+                          Continue with Google
+                        </>
+                      )}
                     </Button>
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
@@ -514,6 +512,40 @@ const AuthPage = () => {
                 </TabsContent>
 
                 <TabsContent value="signup">
+                  <div className="mt-4 space-y-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      disabled={isLoading || isGoogleLoading}
+                      onClick={handleGoogleLogin}
+                    >
+                      {isGoogleLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Connecting to Google...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                          </svg>
+                          Sign up with Google
+                        </>
+                      )}
+                    </Button>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">Or register with email</span>
+                      </div>
+                    </div>
+                  </div>
                   <form onSubmit={handleSignup} className="space-y-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">

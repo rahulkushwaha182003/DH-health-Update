@@ -4,13 +4,13 @@ import { CheckCircle2, Phone } from "lucide-react";
 import whyChooseImg from "@/assets/why-choose-labwala.jpg";
 
 const benefits = [
-  "Serving in 4+ Cities in Madhya Pradesh",
-  "NABL & ISO Certified Labs",
-  "Home Sample Collection",
-  "24x7 Report Access Online",
-  "Pick & Drop from Home",
-  "Expert Radiologists & Pathologists",
-  "200% Money Back Accuracy Guarantee",
+  "Serving across Madhya Pradesh",
+  "NABL & ISO Certified Partner Labs",
+  "Convenient Home Sample Collection",
+  "24x7 Digital Report Access Online",
+  "Transparent Test & Lab Price Comparison",
+  "Reports Verified by Qualified Pathologists",
+  "Dedicated Customer Support Assistance",
 ];
 
 const WhyChooseSection = () => {

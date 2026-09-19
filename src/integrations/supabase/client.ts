@@ -20,6 +20,10 @@ export const supabase = createClient<Database>(
       storage: typeof window !== "undefined" ? window.localStorage : undefined,
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true,
+      lock: async <R>(_name: string, _acquireTimeout: number, fn: () => Promise<R>): Promise<R> => {
+        return await fn();
+      },
     }
   }
 );

@@ -13,7 +13,7 @@ const CartPage = () => {
 
   return (
     <Layout>
-      <SEOHead title="My Cart - Diagnostics Hub" description="Review and book your health tests" />
+      <SEOHead title="My Cart" description="Review and book your health tests" canonical="/cart" robots="noindex, nofollow" />
       <div className="bg-slate-50 min-h-screen py-10">
         <div className="container max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between mb-8">

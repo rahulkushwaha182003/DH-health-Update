@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import CartPage from "./pages/CartPage";
 import HealthPackagesPage from "./pages/HealthPackagesPage";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -31,36 +32,38 @@ const queryClient = new QueryClient();
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
-              <Route path="/tests" element={<TestsPage />} />
-              <Route path="/test/:testSlug" element={<TestDetailPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/book-appointment" element={<BookAppointmentPage />} />
-              <Route path="/results-inquiry" element={<ResultsInquiryPage />} />
-              <Route path="/quote-request" element={<QuoteRequestPage />} />
-              <Route path="/help" element={<HelpPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/admin-login" element={<AdminLoginPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/health-packages" element={<HealthPackagesPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
+                <Route path="/tests" element={<TestsPage />} />
+                <Route path="/test/:testSlug" element={<TestDetailPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/book-appointment" element={<BookAppointmentPage />} />
+                <Route path="/results-inquiry" element={<ResultsInquiryPage />} />
+                <Route path="/quote-request" element={<QuoteRequestPage />} />
+                <Route path="/help" element={<HelpPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin-login" element={<AdminLoginPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/health-packages" element={<HealthPackagesPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );

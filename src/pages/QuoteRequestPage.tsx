@@ -170,9 +170,9 @@ ${data.companyName ? `<b>Company:</b> ${data.companyName}` : ''}
     <Layout>
       <SEOHead
         title="Request a Quote - Bulk & Corporate Testing"
-        description="Request a quote for bulk or corporate diagnostic testing at Diagnostics Hub Rewa. Competitive pricing for organizations and businesses."
+        description="Request a quote for bulk or corporate diagnostic testing through partner labs at Diagnostics Hub."
         canonical="/quote-request"
-        keywords="corporate lab testing Rewa, bulk blood test quote, diagnostic testing quote India"
+        robots="noindex, nofollow"
       />
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-12">

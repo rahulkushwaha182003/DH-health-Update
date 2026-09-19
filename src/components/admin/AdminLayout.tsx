@@ -19,8 +19,7 @@ const AdminLayout = ({ children, activeTab, onTabChange }: AdminLayoutProps) => 
 
   useEffect(() => {
     if (!authLoading && !user) {
-      // Not logged in - redirect to admin login
-      navigate("/admin-login");
+      navigate("/admin-login", { replace: true });
     }
   }, [user, authLoading, navigate]);
 

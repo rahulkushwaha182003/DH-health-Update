@@ -35,25 +35,21 @@ const values = [
 
 
 const certifications = [
-  "NABL Accredited Laboratory",
-  "CAP (College of American Pathologists) Certified",
-  "ISO 15189:2012 Certified",
-  "NABH Accredited",
+  "NABL-Accredited Partner Labs",
+  "CAP-Accredited Partner Facilities",
+  "ISO-Compliant Testing Standards",
+  "NABH-Accredited Partner Centers",
 ];
-
-
 
 const AboutPage = () => {
   return (
     <Layout>
       <SEOHead
-        title="About Us - NABL Accredited Diagnostic Lab"
-        description="Learn about Diagnostics Hub Rewa - 10+ years of diagnostic excellence, 50+ expert staff, NABL accredited. Trusted pathology partner in Madhya Pradesh."
+        title="About Our Diagnostic Booking Platform"
+        description="Learn how Diagnostics Hub helps users compare diagnostic labs, tests and health packages and book home sample collection across Madhya Pradesh."
         canonical="/about"
-        keywords="about diagnostics hub rewa, NABL accredited lab, pathology lab team rewa, trusted diagnostic lab India, best pathology lab Rewa MP, diagnostic centers Rewa Madhya Pradesh"
+        keywords="about diagnostics hub, diagnostic lab booking platform MP, compare blood tests Madhya Pradesh, partner diagnostic labs Rewa, home sample collection"
       />
-      
-
 
       <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-12 md:py-20">
         <div className="container px-4">
@@ -64,11 +60,10 @@ const AboutPage = () => {
               className="h-24 w-24 md:h-32 md:w-32 mx-auto mb-6 rounded-full shadow-lg object-cover"
             />
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Diagnostics Hub
+              About Diagnostics Hub
             </h1>
             <p className="text-base md:text-lg text-muted-foreground mb-6">
-              Your trusted partner in diagnostic healthcare. We combine cutting-edge technology 
-              with experienced pathologists to deliver accurate and timely results for better health outcomes.
+              Diagnostics Hub is a modern diagnostic test booking and lab-comparison aggregator platform in Madhya Pradesh. We connect patients with trusted, NABL-accredited partner laboratories, making quality diagnostics accessible, transparent, and convenient with home sample collection.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <a
@@ -117,18 +112,18 @@ const AboutPage = () => {
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Our Story</h2>
               <p className="text-muted-foreground mb-4">
-                Diagnostics Hub started with a simple mission: to provide accurate, affordable, 
-                and accessible diagnostic services to our community. What began as a small laboratory has 
-                grown into a full-service diagnostic center serving thousands of patients.
+                Diagnostics Hub was founded with a clear mission: to make diagnostic healthcare transparent, 
+                accessible, and hassle-free for patients across Madhya Pradesh. Instead of visiting multiple physical 
+                testing centres or navigating opaque pricing, we bring top accredited diagnostic laboratories onto one intuitive platform.
               </p>
               <p className="text-muted-foreground mb-4">
-                Our journey has been marked by continuous innovation and an unwavering commitment to quality. 
-                We invested in state-of-the-art equipment, recruited top pathologists, and implemented rigorous 
-                quality control measures to ensure every result we deliver meets the highest standards.
+                Our platform enables individuals and families to compare blood test prices, choose from certified 
+                partner laboratories such as Bharat Lab, Pathkind, Metropolis, and Dr. Lal PathLabs, and book doorstep 
+                sample collection at their preferred time.
               </p>
               <p className="text-muted-foreground mb-6">
-                Today, Diagnostics Hub is recognized as one of the leading diagnostic centers in the region, 
-                trusted by healthcare providers and patients alike for our accuracy, reliability, and exceptional service.
+                Today, Diagnostics Hub is recognized as a trusted diagnostic booking companion in Madhya Pradesh, 
+                committed to helping patients access timely digital reports, transparent comparisons, and dependable healthcare services.
               </p>
               <Button asChild>
                 <Link to="/tests">Book Test</Link>
@@ -137,8 +132,8 @@ const AboutPage = () => {
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <Card className="text-center p-4 md:p-6">
                 <Building2 className="h-8 w-8 md:h-10 md:w-10 text-primary mx-auto mb-3" />
-                <p className="text-2xl md:text-3xl font-bold text-foreground">10+</p>
-                <p className="text-muted-foreground text-xs md:text-sm">Years of Excellence</p>
+                <p className="text-2xl md:text-3xl font-bold text-foreground">50+</p>
+                <p className="text-muted-foreground text-xs md:text-sm">Partner Lab Centers</p>
               </Card>
               <Card className="text-center p-4 md:p-6">
                 <Users className="h-8 w-8 md:h-10 md:w-10 text-secondary mx-auto mb-3" />
@@ -148,12 +143,12 @@ const AboutPage = () => {
               <Card className="text-center p-4 md:p-6">
                 <Microscope className="h-8 w-8 md:h-10 md:w-10 text-primary mx-auto mb-3" />
                 <p className="text-2xl md:text-3xl font-bold text-foreground">500+</p>
-                <p className="text-muted-foreground text-xs md:text-sm">Tests Available</p>
+                <p className="text-muted-foreground text-xs md:text-sm">Tests & Packages</p>
               </Card>
               <Card className="text-center p-4 md:p-6">
-                <GraduationCap className="h-8 w-8 md:h-10 md:w-10 text-secondary mx-auto mb-3" />
-                <p className="text-2xl md:text-3xl font-bold text-foreground">50+</p>
-                <p className="text-muted-foreground text-xs md:text-sm">Expert Staff</p>
+                <Award className="h-8 w-8 md:h-10 md:w-10 text-secondary mx-auto mb-3" />
+                <p className="text-2xl md:text-3xl font-bold text-foreground">NABL</p>
+                <p className="text-muted-foreground text-xs md:text-sm">Accredited Lab Partners</p>
               </Card>
             </div>
           </div>
@@ -180,15 +175,13 @@ const AboutPage = () => {
         </div>
       </section>
 
-
-
       {/* Certifications */}
       <section className="py-12 md:py-16 bg-primary text-primary-foreground">
         <div className="container px-4 text-center">
           <Award className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 md:mb-6 text-secondary" />
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Accreditations & Certifications</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Partner Lab Accreditations & Standards</h2>
           <p className="text-primary-foreground/80 max-w-2xl mx-auto mb-6 md:mb-8 text-sm md:text-base">
-            Our quality is validated by national and international accreditation bodies.
+            Our partner diagnostic laboratories adhere to the highest national and international clinical accreditation standards.
           </p>
           <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             {certifications.map((cert) => (

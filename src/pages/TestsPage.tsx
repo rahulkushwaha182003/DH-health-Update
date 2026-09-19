@@ -147,7 +147,8 @@ export default function DiagnosticsUI() {
       <Layout>
         <SEOHead
           title={`${selectedLab} - View & Book Tests`}
-          description={isCatalogAvailable ? `Browse over 200 high-quality health packages and tests from ${selectedLab}` : `${selectedLab} is coming soon to Diagnostics Hub.`}
+          description={isCatalogAvailable ? `Compare and book diagnostic tests and health packages from ${selectedLab} with home sample collection in MP.` : `${selectedLab} is coming soon to Diagnostics Hub.`}
+          canonical="/tests"
         />
         <div className="p-4 md:p-8 min-h-screen bg-slate-50">
           <button
@@ -165,7 +166,7 @@ export default function DiagnosticsUI() {
               </div>
               <div className="pt-1">
                 <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800">
-                  {selectedLab}
+                  {selectedLab} Tests & Health Packages
                 </h1>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
                   <span className="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-bold tracking-wide">
@@ -378,8 +379,10 @@ export default function DiagnosticsUI() {
   return (
     <Layout>
       <SEOHead
-        title="Diagnostics Hub - Lab Selection"
-        description="Choose from our partner diagnostic labs for quality healthcare services"
+        title="Compare Blood Test Prices & Labs in MP"
+        description="Compare blood test prices, health packages and trusted diagnostic lab partners. Select a lab and book home sample collection across Madhya Pradesh."
+        canonical="/tests"
+        keywords="compare blood test prices MP, diagnostic lab partners Madhya Pradesh, pathology tests Rewa, book home sample collection MP"
       />
       <div className="p-6 bg-gradient-to-br from-blue-50 to-green-50 min-h-screen">
         <div className="container max-w-7xl mx-auto mb-6">
@@ -394,12 +397,12 @@ export default function DiagnosticsUI() {
           </Button>
         </div>
         <div className="mb-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-[#0b417c] tracking-tight mb-2 selection:bg-blue-200">
-            Diagnostics Hub
+          <h1 className="text-3xl md:text-5xl font-extrabold text-[#0b417c] tracking-tight mb-2 selection:bg-blue-200">
+            Compare Blood Tests, Prices and Diagnostic Labs
           </h1>
           <p className="text-lg md:text-xl text-slate-600 font-medium mx-auto flex items-center justify-center gap-3">
             <span className="w-10 h-[2px] bg-green-500 rounded-full hidden sm:block"></span>
-            India's top pathology labs
+            India's top trusted partner pathology labs
             <span className="w-10 h-[2px] bg-green-500 rounded-full hidden sm:block"></span>
           </p>
         </div>

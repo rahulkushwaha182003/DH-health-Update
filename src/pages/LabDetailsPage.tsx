@@ -128,8 +128,9 @@ const LabDetailsPage = () => {
   return (
     <Layout>
       <SEOHead
-        title={`${decodedLabName} - Diagnostics Hub`}
-        description={`Learn more about ${decodedLabName} - our trusted diagnostic partner with NABL certification and home collection services.`}
+        title={`${decodedLabName} - Partner Lab Details`}
+        description={`Book blood tests and health packages from ${decodedLabName}. Trusted partner laboratory with home sample collection across Madhya Pradesh.`}
+        canonical={`/lab/${labName}`}
       />
       <section className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-8">
         <div className="container">
@@ -146,9 +147,9 @@ const LabDetailsPage = () => {
             </Button>
             <div className="flex-1 text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
-                {currentLab?.logoUrl && (
+                {(currentLab as any)?.logoUrl && (
                   <img 
-                    src={currentLab.logoUrl} 
+                    src={(currentLab as any).logoUrl} 
                     alt={decodedLabName}
                     className="w-10 h-10 rounded-lg object-cover"
                   />
@@ -300,7 +301,7 @@ const LabDetailsPage = () => {
                           </div>
                           <span className="font-bold text-green-600 text-sm">{formatINR(test.price)}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">{test.description}</p>
+                        {(test as any).description && <p className="text-xs text-muted-foreground mb-2">{(test as any).description}</p>}
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Badge variant="secondary" className="bg-green-100 text-green-800">
                             {test.category}

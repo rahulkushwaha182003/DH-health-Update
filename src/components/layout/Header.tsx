@@ -1,56 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone, Clock, User, LogOut, ShoppingCart, Home, Activity, FlaskConical, Info, HelpCircle, Calendar, ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { User as SupabaseUser } from "@supabase/supabase-js";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 import logo from "@/assets/diagnostics-hub-logo.png";
 
 const WHATSAPP_NUMBER = "917649885936";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const { cartItems } = useCart();
 
-  useEffect(() => {
-    // Listen for auth changes (including INITIAL_SESSION)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => {
-          fetchUserName(session.user.id);
-        }, 0);
-      } else {
-        setUserName(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchUserName = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("first_name, last_name")
-        .eq("user_id", userId)
-        .maybeSingle();
-      
-      if (data) {
-        setUserName(data.first_name || data.last_name ? `${data.first_name || ''} ${data.last_name || ''}`.trim() : null);
-      }
-    } catch (error) {
-      console.error("Error fetching user name:", error);
-    }
-  };
+  const displayName = profile?.first_name 
+    ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+    : (user?.user_metadata?.first_name 
+        ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+        : (user?.email ? user.email.split('@')[0] : null));
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setUserName(null);
+    await signOut();
     navigate("/");
   };
 
@@ -89,7 +59,7 @@ const Header = () => {
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link to="/dashboard" className="flex items-center gap-1 hover:underline">
                   <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="max-w-[80px] sm:max-w-[120px] truncate">{userName || "My Account"}</span>
+                  <span className="max-w-[80px] sm:max-w-[120px] truncate">{displayName || "My Account"}</span>
                 </Link>
                 <button onClick={handleSignOut} className="flex items-center gap-1 hover:underline opacity-80">
                   <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />

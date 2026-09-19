@@ -8,7 +8,7 @@ const INSTAGRAM_URL = "https://www.instagram.com/diagnostics_hub?igsh=MzNzanJpN2
 const TWITTER_URL = "https://x.com/Diagnosticshub";
 const YOUTUBE_URL = "https://youtube.com/@diagnostics_hub?si=NbI4-ay4QPOYSZEY";
 const LINKEDIN_URL = "https://www.linkedin.com/in/diagnostics-hub-834060420?utm_source=share_via&utm_content=profile&utm_medium=member_android";
-const EMAIL = "pathologyhubdiagnostics@gmail.com";
+const EMAIL = "support@diagnosticshub.in";
 
 const Footer = () => {
   return (
@@ -47,7 +47,7 @@ const Footer = () => {
               </div>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Your trusted partner in diagnostic healthcare. NABL accredited laboratory providing accurate, secure, and timely test results.
+              Your trusted diagnostic test booking and lab-comparison platform. Compare tests and prices from NABL-accredited partner laboratories with home sample collection.
             </p>
             
             {/* Social Icons list */}

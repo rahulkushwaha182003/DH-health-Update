@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, Loader2, Shield, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/diagnostics-hub-logo.png";
 import { Link } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -112,6 +113,12 @@ const AdminLoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
+      <SEOHead
+        title="Admin Portal"
+        description="Diagnostics Hub Administration Portal"
+        canonical="/admin-login"
+        robots="noindex, nofollow"
+      />
       <div className="w-full max-w-sm">
         <Card className="shadow-2xl border border-border/50 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
@@ -119,7 +126,7 @@ const AdminLoginPage = () => {
               <div className="relative">
                 <img
                   src={logo}
-                  alt="Pathology Hub Logo"
+                  alt="Diagnostics Hub Logo"
                   className="h-20 w-20 rounded-full object-cover shadow-lg border-4 border-primary/20"
                 />
                 <div className="absolute -bottom-1 -right-1 h-7 w-7 bg-primary rounded-full flex items-center justify-center shadow-md">
@@ -129,7 +136,7 @@ const AdminLoginPage = () => {
             </div>
             <CardTitle className="text-xl font-bold text-foreground">Admin Portal</CardTitle>
             <CardDescription className="text-muted-foreground text-sm">
-              Pathology Hub Administration
+              Diagnostics Hub Administration
             </CardDescription>
           </CardHeader>
           <CardContent>

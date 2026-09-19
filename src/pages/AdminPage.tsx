@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import AdminLayout from "@/components/admin/AdminLayout";
+import SEOHead from "@/components/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -412,7 +413,7 @@ const AdminPage = () => {
     }
     setIsResettingPass(true);
     try {
-      const { error } = await supabase.rpc('admin_reset_user_password', {
+      const { error } = await (supabase.rpc as any)('admin_reset_user_password', {
         target_user_id: resetPassUser.id,
         new_plain_password: resetNewPass
       });
@@ -492,8 +493,9 @@ const AdminPage = () => {
           }
       }
     } else if (isBooking) {
+      const isDH = item.test_name?.toLowerCase().includes("dh health package");
       testPrice = item.test_price || 0;
-      collectionFee = (isHome && testPrice < 1000) ? 150 : 0;
+      collectionFee = (isHome && !isDH && testPrice < 1000) ? 150 : 0;
     }
 
     const discountMatch = (isAppt ? (item.admin_notes || "") : (item.notes || "")).match(/\[Discount: (\d+)\]/);
@@ -1264,6 +1266,12 @@ const AdminPage = () => {
 
   return (
     <AdminLayout activeTab={activeTab} onTabChange={setActiveTab}>
+      <SEOHead
+        title="Admin Portal"
+        description="Diagnostics Hub Administration Dashboard"
+        canonical="/admin"
+        robots="noindex, nofollow"
+      />
       {renderContent()}
 
       {/* Details Dialog */}

@@ -38,19 +38,19 @@ const HeroSection = () => {
             {/* Premium Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-[0_2px_10px_rgba(0,0,0,0.03)] text-[#003B73] font-bold text-sm mb-7 hover:shadow-md transition-all cursor-default">
               <Award className="h-4 w-4 text-[#3B8B41]" />
-              <span className="tracking-wide">NABL Accredited Laboratory</span>
+              <span className="tracking-wide">NABL-Accredited Partner Labs</span>
             </div>
 
-            {/* Gradient Headline */}
-            <h1 className="text-[clamp(2.25rem,6vw,4.5rem)] font-extrabold text-[#002B54] leading-[1.1] mb-6 tracking-tight drop-shadow-sm text-balance">
-              Book Blood Tests Across{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#004A99] via-[#0066CC] to-[#38BDF8]">
-                Madhya Pradesh
+            {/* Headline */}
+            <h1 className="text-[clamp(2rem,4.5vw,3.5rem)] font-extrabold text-[#002B54] leading-[1.15] mb-6 tracking-tight drop-shadow-sm">
+              Book Blood Tests at Your Doorstep{" "}
+              <span className="block text-red-600 whitespace-nowrap">
+                Anytime, Anywhere
               </span>
             </h1>
 
             <p className="text-base md:text-lg lg:text-xl text-slate-600 mb-8 md:mb-10 max-w-xl font-medium leading-relaxed">
-              State-of-the-art pathology services with 100+ diagnostic tests, quick turnaround times, and trusted results. Your health is our priority.
+              Compare blood tests and health packages from trusted diagnostic lab partners. Choose your preferred lab and schedule convenient home sample collection across Madhya Pradesh.
             </p>
 
             {/* Elevated Buttons */}

@@ -28,3 +28,4 @@ dist-ssr
 temp-hub/
 *.tsbuildinfo
 .env.backup
+dev-bridge.cjs

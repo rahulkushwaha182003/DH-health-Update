@@ -26,6 +26,7 @@ import HealthPackagesPage from "./pages/HealthPackagesPage";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
+import AuthRedirectHandler from "./components/AuthRedirectHandler";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
+              <AuthRedirectHandler />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/services" element={<ServicesPage />} />

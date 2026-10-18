@@ -10,7 +10,6 @@ const partnerLabs = [
   "Redcliffe Lab",
   "Agilus Lab",
   "Bharat Lab",
-  "Mateshwari Pathology",
   "Labwala Health Diagnostics",
 ];
 

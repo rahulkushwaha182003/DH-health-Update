@@ -216,23 +216,6 @@ export const DefaultLogo = ({ className = "w-full h-auto" }: { className?: strin
   </div>
 );
 
-export const MateshwariLogo = ({ className = "w-full h-auto max-h-20" }: { className?: string }) => (
-  <svg viewBox="0 0 500 120" className={className} xmlns="http://www.w3.org/2000/svg">
-    <rect width="500" height="120" rx="8" fill="white" />
-    <g transform="translate(20, 10)">
-      <circle cx="45" cy="50" r="40" fill="#cc1f26" />
-      <g transform="translate(25, 30) scale(1.2)">
-        <path d="M 15 5 L 15 35 M 5 15 L 25 15 M 5 25 L 25 25" stroke="white" strokeWidth="4" />
-        <circle cx="15" cy="20" r="10" stroke="white" strokeWidth="3" fill="none" />
-      </g>
-      <g transform="translate(100, 20)">
-        <text x="0" y="35" fill="#cc1f26" fontSize="42" fontWeight="bold" fontFamily="sans-serif">Mateshwari</text>
-        <text x="0" y="75" fill="#1e3a8a" fontSize="32" fontWeight="bold" fontFamily="sans-serif">Pathology</text>
-      </g>
-    </g>
-  </svg>
-);
-
 export const DiagnosticsHubLogo = ({ className = "w-full h-auto max-h-20" }: { className?: string }) => (
   <div className="flex items-center justify-center w-full h-full p-1">
     <img src={dhLogoImg} alt="Diagnostics Hub" className={`${className} object-contain`} />
@@ -249,7 +232,6 @@ export const LabLogos = {
   "Redcliffe Labs": RedcliffeLogo,
   "Agilus Diagnostics": AgilusLogo,
   "Bharat Lab": BharatLabLogo,
-  "Mateshwari Pathology": MateshwariLogo,
   "Other Labs": DefaultLogo,
 };
 

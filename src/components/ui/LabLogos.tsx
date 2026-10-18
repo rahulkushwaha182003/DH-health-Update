@@ -1,4 +1,5 @@
 import React from 'react';
+import dhLogoImg from '@/assets/diagnostics-hub-logo.png';
 
 export const AgilusLogo = ({ className = "w-full h-auto max-h-20" }: { className?: string }) => (
   <svg viewBox="0 0 400 100" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -196,10 +197,23 @@ export const LabwalaLogo = ({ className = "w-full h-auto max-h-20" }: { classNam
 );
 
 export const DefaultLogo = ({ className = "w-full h-auto" }: { className?: string }) => (
-  <svg viewBox="0 0 240 80" className={className} xmlns="http://www.w3.org/2000/svg">
-    <rect width="240" height="80" rx="8" fill="#e5e7eb" />
-    <text x="120" y="48" fill="#6b7280" fontSize="20" fontWeight="bold" fontFamily="sans-serif" textAnchor="middle">Generic Lab</text>
-  </svg>
+  <div className="flex flex-col items-center justify-center w-full h-full py-1">
+    <div className="flex items-center justify-center gap-1.5 mb-1.5">
+      <div className="flex -space-x-1.5 overflow-hidden items-center">
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#123a88] text-white text-[8px] font-black border border-white shadow-xs">LAL</span>
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#008080] text-white text-[8px] font-black border border-white shadow-xs">MET</span>
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#003b6e] text-[#fcca0e] text-[8px] font-black border border-white shadow-xs">PK</span>
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#e64a45] text-white text-[8px] font-black border border-white shadow-xs">THY</span>
+      </div>
+      <span className="text-[10px] font-black text-[#003B73] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+        8+ Labs
+      </span>
+    </div>
+    <div className="text-center">
+      <span className="text-xs font-black text-slate-800 tracking-tight block">Partner Pathology Network</span>
+      <span className="text-[10px] font-bold text-emerald-600 block">NABL & Certified Labs</span>
+    </div>
+  </div>
 );
 
 export const MateshwariLogo = ({ className = "w-full h-auto max-h-20" }: { className?: string }) => (
@@ -219,7 +233,14 @@ export const MateshwariLogo = ({ className = "w-full h-auto max-h-20" }: { class
   </svg>
 );
 
+export const DiagnosticsHubLogo = ({ className = "w-full h-auto max-h-20" }: { className?: string }) => (
+  <div className="flex items-center justify-center w-full h-full p-1">
+    <img src={dhLogoImg} alt="Diagnostics Hub" className={`${className} object-contain`} />
+  </div>
+);
+
 export const LabLogos = {
+  "Diagnostics Hub": DiagnosticsHubLogo,
   "Labwala Health Diagnostics": LabwalaLogo,
   "Dr. Lal PathLabs": LalPathLabsLogo,
   "Metropolis Healthcare": MetropolisLogo,
@@ -233,6 +254,7 @@ export const LabLogos = {
 };
 
 export const LabNameAliases: Record<string, string> = {
+  "Diagnostics Hub": "Diagnostics Hub",
   "Dr. Lal Path Lab": "Dr. Lal PathLabs",
   "Metropolis Lab": "Metropolis Healthcare",
   "Thyrocare Lab": "Thyrocare",

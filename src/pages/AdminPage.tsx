@@ -44,10 +44,12 @@ import { drLalTests } from "@/data/drLalTests";
 import { metropolisTests } from "@/data/metropolisTests";
 import { pathkindTests } from "@/data/pathkindTests";
 import { bharatTests } from "@/data/bharatTests";
+import { diagnosticsHubTests } from "@/data/diagnosticsHubTests";
 
 const allTestCatalogs = [
   ...tests as any[],
   ...packages as any[],
+  ...diagnosticsHubTests as any[],
   ...labTests as any[],
   ...drLalTests as any[],
   ...metropolisTests as any[],

@@ -59,7 +59,7 @@ const packages: Package[] = [
       "Liver Function Test (LFT) (12)"
     ],
     mrp: 7500,
-    offerPrice: 1800,
+    offerPrice: 1599,
     color: "from-blue-600 via-indigo-600 to-indigo-700",
     textColor: "text-blue-600",
     tag: "Popular Choice",
@@ -83,7 +83,7 @@ const packages: Package[] = [
       "Urine Routine & Microscopic Examination (23)"
     ],
     mrp: 4500,
-    offerPrice: 1399,
+    offerPrice: 1099,
     color: "from-blue-600 via-indigo-600 to-indigo-700",
     textColor: "text-blue-600",
     tag: "Best Value",
@@ -104,7 +104,7 @@ const packages: Package[] = [
       "Fasting Blood Sugar"
     ],
     mrp: 3050,
-    offerPrice: 999,
+    offerPrice: 799,
     color: "from-blue-600 via-indigo-600 to-indigo-700",
     textColor: "text-blue-600",
     tag: "Essential Care",

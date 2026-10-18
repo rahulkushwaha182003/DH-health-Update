@@ -11,6 +11,7 @@ import { drLalTests } from "@/data/drLalTests";
 import { metropolisTests } from "@/data/metropolisTests";
 import { pathkindTests } from "@/data/pathkindTests";
 import { bharatTests } from "@/data/bharatTests";
+import { diagnosticsHubTests } from "@/data/diagnosticsHubTests";
 import { formatINR, generateSlug, tests as genericTests, packages } from "@/data/testsData";
 import { useCart } from "@/context/CartContext";
 
@@ -44,7 +45,9 @@ const TestDetailPage = () => {
   let test: any = null;
   let isPackage = false;
 
-  if (selectedLab === "Dr. Lal PathLabs") {
+  if (selectedLab === "Diagnostics Hub") {
+    test = diagnosticsHubTests.find(t => generateSlug(t.name) === testSlug);
+  } else if (selectedLab === "Dr. Lal PathLabs") {
     test = drLalTests.find(t => generateSlug(t.name) === testSlug);
   } else if (selectedLab === "Metropolis Healthcare") {
     test = metropolisTests.find(t => generateSlug(t.name) === testSlug);
@@ -53,7 +56,10 @@ const TestDetailPage = () => {
   } else if (selectedLab === "Bharat Lab") {
     test = bharatTests.find(t => generateSlug(t.name) === testSlug);
   } else {
-    test = labTests.find(t => generateSlug(t.name) === testSlug);
+    test = diagnosticsHubTests.find(t => generateSlug(t.name) === testSlug);
+    if (!test) {
+      test = labTests.find(t => generateSlug(t.name) === testSlug);
+    }
     if (!test) {
       test = genericTests.find(t => generateSlug(t.name) === testSlug);
     }
@@ -101,10 +107,22 @@ const TestDetailPage = () => {
       "CANCER MARKER FEMALE",
       "CANCER MARKER MALE",
       "SWASTH DADA PACKAGE",
-      "SWASTH BHARAT HORMONE PROFILE"
+      "SWASTH BHARAT HORMONE PROFILE",
+      "DH HEALTH PACKAGE 1",
+      "DH HEALTH PACKAGE 2",
+      "DH HEALTH PACKAGE 3"
     ].map(name => name.trim().toUpperCase()));
 
-    const isPkg = test.name.trim().toUpperCase() !== "UREA, SERUM" && (allowedPackageNames.has(test.name.trim().toUpperCase()) || test.category === "Health Package");
+    let isPkg = false;
+    const testNormalized = test.name.trim().toUpperCase();
+    if (selectedLab === "Diagnostics Hub") {
+      isPkg = testNormalized === "DH HEALTH PACKAGE 1" ||
+              testNormalized === "DH HEALTH PACKAGE 2" ||
+              testNormalized === "DH HEALTH PACKAGE 3";
+    } else {
+      isPkg = testNormalized !== "UREA, SERUM" && (allowedPackageNames.has(testNormalized) || test.category === "Health Package");
+    }
+
     let displayCategory = test.testCategory;
     if (!displayCategory || displayCategory === "Routine & Special") {
       displayCategory = isPkg ? "Health Package" : "Routine & Special";

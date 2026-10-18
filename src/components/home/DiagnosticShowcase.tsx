@@ -26,9 +26,10 @@ const DiagnosticShowcase = () => {
 
         <div className="grid xs:grid-cols-2 lg:grid-cols-3 gap-6">
           {diagnosticServices.map((service) => (
-            <div
+            <Link
               key={service.name}
-              className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              to="/tests?lab=Diagnostics+Hub"
+              className="group rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block"
             >
               <div className="relative h-56 overflow-hidden">
                 <img
@@ -46,10 +47,13 @@ const DiagnosticShowcase = () => {
                   <p className="text-sm text-white/80">{service.sublabel}</p>
                 </div>
               </div>
-              <div className="p-4">
+              <div className="p-4 flex items-center justify-between">
                 <p className="font-semibold text-foreground">{service.name}</p>
+                <span className="text-xs font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  View Tests <ArrowRight className="h-3.5 w-3.5" />
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

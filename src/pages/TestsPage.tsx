@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Clock, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock, Sparkles, Building2, CheckCircle2, ArrowRight, ShieldCheck, Home } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SEOHead from "@/components/SEOHead";
 import { LabLogos } from "@/components/ui/LabLogos";
@@ -10,23 +10,21 @@ import { drLalTests } from "@/data/drLalTests";
 import { metropolisTests } from "@/data/metropolisTests";
 import { pathkindTests } from "@/data/pathkindTests";
 import { bharatTests } from "@/data/bharatTests";
+import { diagnosticsHubTests } from "@/data/diagnosticsHubTests";
 import { useCart } from "@/context/CartContext";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { generateSlug } from "@/data/testsData";
 import { RemoveConfirmDialog } from "@/components/ui/RemoveConfirmDialog";
 
-const FALLBACK_LOGO = "https://via.placeholder.com/60?text=Lab";
-
-const labs = [
-  { name: "Dr. Lal PathLabs", logo: "" },
-  { name: "Metropolis Healthcare", logo: "" },
-  { name: "Thyrocare", logo: "" },
+const partnerLabs = [
+  { name: "Bharat Lab", logo: "" },
   { name: "Pathkind Labs", logo: "" },
+  { name: "Metropolis Healthcare", logo: "" },
+  { name: "Dr. Lal PathLabs", logo: "" },
+  { name: "Thyrocare", logo: "" },
   { name: "Redcliffe Labs", logo: "" },
   { name: "Agilus Diagnostics", logo: "" },
-  { name: "Bharat Lab", logo: "" },
-  { name: "Labwala Health Diagnostics", logo: "" },
-  { name: "Other Labs", logo: "" }
+  { name: "Labwala Health Diagnostics", logo: "" }
 ];
 
 export default function DiagnosticsUI() {
@@ -61,6 +59,109 @@ export default function DiagnosticsUI() {
     setSearchQuery("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // 👉 OTHER LABS PARTNER SELECTION PAGE
+  if (selectedLab === "Other Labs") {
+    return (
+      <Layout>
+        <SEOHead
+          title="Choose Partner Pathology Lab - Compare Tests & Packages in MP"
+          description="Choose from India's top trusted partner pathology labs including Bharat Lab, Pathkind, Metropolis, Dr. Lal PathLabs and book home collection."
+          canonical="/tests?lab=Other+Labs"
+        />
+        <div className="p-6 bg-gradient-to-br from-blue-50 to-green-50 min-h-screen">
+          <div className="container max-w-7xl mx-auto mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleNavigate(null)}
+              className="flex items-center gap-2 text-slate-600 hover:text-primary transition-colors pl-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="font-semibold">Back to All Options</span>
+            </Button>
+          </div>
+
+          <div className="mb-10 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-[#003B73] rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+              <Building2 className="w-3.5 h-3.5" />
+              Partner Network
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold text-[#0b417c] tracking-tight mb-2">
+              Choose Your Lab
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 font-medium mx-auto flex items-center justify-center gap-3">
+              <span className="w-10 h-[2px] bg-green-500 rounded-full hidden sm:block"></span>
+              India's top trusted partner pathology labs
+              <span className="w-10 h-[2px] bg-green-500 rounded-full hidden sm:block"></span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {partnerLabs.map((lab, index) => {
+              const LogoComponent = LabLogos[lab.name as keyof typeof LabLogos] || LabLogos["Other Labs"];
+              const isAvailable = lab.name === "Bharat Lab" || lab.name === "Pathkind Labs" || lab.name === "Metropolis Healthcare" || lab.name === "Dr. Lal PathLabs";
+              return (
+                <Card 
+                  key={index} 
+                  className={`rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 relative overflow-hidden bg-white hover:-translate-y-1.5 cursor-pointer ${
+                    isAvailable 
+                      ? 'border-emerald-500/40 ring-2 ring-emerald-500/10' 
+                      : 'border-slate-200'
+                  }`}
+                  onClick={() => handleNavigate(lab.name)}
+                >
+                  {isAvailable ? (
+                    <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-[0_4px_12px_rgba(16,185,129,0.35)] uppercase tracking-wider flex items-center gap-1.5 border border-emerald-400/20">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                      </span>
+                      Available
+                    </div>
+                  ) : (
+                    <div className="absolute top-3 right-3 bg-slate-100 text-slate-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-slate-200">
+                      Coming Soon
+                    </div>
+                  )}
+                  <CardContent className="p-5 flex flex-col items-center gap-4 text-center">
+                    <div className="w-full bg-white rounded-xl p-3 flex justify-center items-center h-28 border border-slate-100 shadow-sm">
+                      <LogoComponent className="w-full h-full object-contain max-h-24" />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900">{lab.name}</h2>
+                      <p className="text-[11px] font-semibold text-slate-500 mt-0.5">
+                        {isAvailable ? "Tests & Packages Available" : "Catalog Under Integration"}
+                      </p>
+                    </div>
+
+                    <span className="text-xs bg-green-100 text-green-700 font-semibold px-2.5 py-1 rounded-full">
+                      Home Collection Available
+                    </span>
+
+                    <Button 
+                      className="w-full font-bold bg-[#003B73] hover:bg-[#002B54] text-white shadow-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNavigate(lab.name);
+                      }}
+                    >
+                      View Packages & Test
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 text-center">
+            <p className="text-sm text-gray-600">Only Home Collection Service Available</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   // 👉 SECOND PAGE (Lab Details - View 200+ Tests)
   if (selectedLab) {
@@ -101,22 +202,34 @@ export default function DiagnosticsUI() {
       "CANCER MARKER FEMALE",
       "CANCER MARKER MALE",
       "SWASTH DADA PACKAGE",
-      "SWASTH BHARAT HORMONE PROFILE"
+      "SWASTH BHARAT HORMONE PROFILE",
+      "DH HEALTH PACKAGE 1",
+      "DH HEALTH PACKAGE 2",
+      "DH HEALTH PACKAGE 3"
     ].map(name => name.trim().toUpperCase()));
 
-    const baseTests = selectedLab === "Dr. Lal PathLabs"
-      ? (drLalTests as typeof labTests)
-      : selectedLab === "Metropolis Healthcare"
-        ? (metropolisTests as typeof labTests)
-        : selectedLab === "Pathkind Labs"
-          ? (pathkindTests as typeof labTests)
-          : selectedLab === "Bharat Lab"
-            ? (bharatTests as typeof labTests)
-            : labTests;
+    const baseTests = selectedLab === "Diagnostics Hub"
+      ? (diagnosticsHubTests as typeof labTests)
+      : selectedLab === "Dr. Lal PathLabs"
+        ? (drLalTests as typeof labTests)
+        : selectedLab === "Metropolis Healthcare"
+          ? (metropolisTests as typeof labTests)
+          : selectedLab === "Pathkind Labs"
+            ? (pathkindTests as typeof labTests)
+            : selectedLab === "Bharat Lab"
+              ? (bharatTests as typeof labTests)
+              : labTests;
 
     const activeTests = baseTests.map(test => {
       const normalizedName = test.name.trim().toUpperCase();
-      const isPackage = normalizedName !== "UREA, SERUM" && (allowedPackageNames.has(normalizedName) || test.category === "Health Package");
+      let isPackage = false;
+      if (selectedLab === "Diagnostics Hub") {
+        isPackage = normalizedName === "DH HEALTH PACKAGE 1" ||
+                    normalizedName === "DH HEALTH PACKAGE 2" ||
+                    normalizedName === "DH HEALTH PACKAGE 3";
+      } else {
+        isPackage = normalizedName !== "UREA, SERUM" && (allowedPackageNames.has(normalizedName) || test.category === "Health Package");
+      }
       
       let displayCategory = test.testCategory;
       if (!displayCategory || displayCategory === "Routine & Special") {
@@ -141,7 +254,7 @@ export default function DiagnosticsUI() {
 
     const LogoComponent = LabLogos[selectedLab as keyof typeof LabLogos] || LabLogos["Other Labs"];
 
-    const isCatalogAvailable = selectedLab === "Bharat Lab" || selectedLab === "Pathkind Labs" || selectedLab === "Metropolis Healthcare";
+    const isCatalogAvailable = selectedLab === "Diagnostics Hub" || selectedLab === "Bharat Lab" || selectedLab === "Pathkind Labs" || selectedLab === "Metropolis Healthcare" || selectedLab === "Dr. Lal PathLabs";
 
     return (
       <Layout>
@@ -153,9 +266,15 @@ export default function DiagnosticsUI() {
         <div className="p-4 md:p-8 min-h-screen bg-slate-50">
           <button
             className="mb-6 text-slate-500 hover:text-blue-700 font-medium flex items-center gap-2 transition-colors group"
-            onClick={() => handleNavigate(null)}
+            onClick={() => {
+              if (selectedLab === "Diagnostics Hub") {
+                handleNavigate(null);
+              } else {
+                handleNavigate("Other Labs");
+              }
+            }}
           >
-            ← Back to Labs
+            ← {selectedLab === "Diagnostics Hub" ? "Back to All Options" : "Back to Partner Labs"}
           </button>
 
           {/* Lab Header */}
@@ -344,11 +463,11 @@ export default function DiagnosticsUI() {
                   Explore Bharat Lab Catalog
                 </Button>
                 <Button
-                  onClick={() => handleNavigate(null)}
+                  onClick={() => handleNavigate("Other Labs")}
                   variant="outline"
                   className="w-full sm:w-auto bg-white border-slate-200 hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-xl font-bold text-sm transition-all"
                 >
-                  Back to All Labs
+                  Back to Partner Labs
                 </Button>
               </div>
             </div>
@@ -375,7 +494,10 @@ export default function DiagnosticsUI() {
     );
   }
 
-  // 👉 FIRST PAGE
+  // 👉 FIRST PAGE (Main Landing: Diagnostics Hub & Other Labs)
+  const DHLogo = LabLogos["Diagnostics Hub"];
+  const OtherLabsLogo = LabLogos["Other Labs"];
+
   return (
     <Layout>
       <SEOHead
@@ -407,41 +529,130 @@ export default function DiagnosticsUI() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {labs.map((lab, index) => {
-            const LogoComponent = LabLogos[lab.name as keyof typeof LabLogos] || LabLogos["Other Labs"];
-            const isAvailable = lab.name === "Bharat Lab" || lab.name === "Pathkind Labs" || lab.name === "Metropolis Healthcare";
-            return (
-              <Card key={index} className={`rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 relative overflow-hidden ${isAvailable ? 'border-emerald-500/40 ring-2 ring-emerald-500/10 bg-gradient-to-b from-emerald-50/10 to-white hover:-translate-y-1.5' : ''}`}>
-                {isAvailable && (
-                  <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-[0_4px_12px_rgba(16,185,129,0.35)] uppercase tracking-wider flex items-center gap-1.5 border border-emerald-400/20">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                    </span>
-                    Available
-                  </div>
-                )}
-                <CardContent className="p-5 flex flex-col items-center gap-4 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-6 sm:gap-8 items-stretch">
+          {/* Diagnostics Hub Card */}
+          <Card 
+            className="group rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden border-2 border-[#003B73] ring-4 ring-blue-500/10 bg-gradient-to-b from-blue-50/50 via-white to-blue-50/30 hover:-translate-y-2 cursor-pointer flex flex-col"
+            onClick={() => handleNavigate("Diagnostics Hub")}
+          >
+            {/* Top Badge */}
+            <div className="absolute top-3.5 right-3.5 z-10 bg-gradient-to-r from-[#003B73] to-[#005bb5] text-white text-[10px] font-black px-3.5 py-1 rounded-full shadow-[0_4px_12px_rgba(0,59,115,0.35)] uppercase tracking-wider flex items-center gap-1.5 border border-blue-400/30">
+              <Sparkles className="w-3 h-3 text-yellow-300 animate-pulse" />
+              By Bharat Lab
+            </div>
 
-                  <div className="w-full bg-slate-50 rounded-xl p-3 flex justify-center items-center h-28 border border-slate-100">
-                    <LogoComponent className="w-full h-full object-contain max-h-24" />
-                  </div>
+            <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center flex-1 justify-between gap-5">
+              {/* Logo Area */}
+              <div className="w-full flex flex-col items-center">
+                <div className="w-full bg-white rounded-2xl p-4 flex justify-center items-center h-28 border border-slate-100 shadow-xs group-hover:scale-105 transition-transform duration-300">
+                  <DHLogo className="w-full h-full object-contain max-h-24" />
+                </div>
 
-                  <h2 className="text-lg font-semibold">{lab.name}</h2>
+                <div className="mt-4">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Diagnostics Hub</h2>
+                  <p className="text-xs font-bold text-blue-700 mt-1 uppercase tracking-wider">
+                    DH Health Packages & Lab Tests
+                  </p>
+                </div>
+              </div>
 
-                  <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-                    Home Collection Available
-                  </span>
+              {/* Value Propositions / Key Features */}
+              <div className="w-full bg-white/90 rounded-2xl p-3.5 border border-blue-100/70 text-left space-y-2 text-xs shadow-xs">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span><strong>3 DH Health Packages</strong> (Upto 78% Off)</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span><strong>550+ Individual</strong> Routine & Special Tests</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Quality Assured by <strong>Bharat Lab</strong></span>
+                </div>
+              </div>
 
-                  <Button className="w-full" onClick={() => handleNavigate(lab.name)}>
-                    View Packages & Test
-                  </Button>
+              <div className="w-full flex flex-col items-center gap-3">
+                <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">
+                  <Home className="w-3.5 h-3.5 text-emerald-600" />
+                  Free Home Collection Available
+                </span>
 
-                </CardContent>
-              </Card>
-            )
-          })}
+                <Button 
+                  className="w-full font-bold bg-[#003B73] hover:bg-[#002B54] text-white shadow-md py-3 h-auto text-sm rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNavigate("Diagnostics Hub");
+                  }}
+                >
+                  <span>View Packages & Test</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Other Labs Card */}
+          <Card 
+            className="group rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden border-2 border-slate-200 hover:border-emerald-500/50 ring-4 ring-slate-100 bg-gradient-to-b from-slate-50/50 via-white to-emerald-50/20 hover:-translate-y-2 cursor-pointer flex flex-col"
+            onClick={() => handleNavigate("Other Labs")}
+          >
+            {/* Top Badge */}
+            <div className="absolute top-3.5 right-3.5 z-10 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-[10px] font-black px-3.5 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1.5 border border-emerald-400/30">
+              <Building2 className="w-3 h-3 text-emerald-200" />
+              8+ Partner Labs
+            </div>
+
+            <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center flex-1 justify-between gap-5">
+              {/* Logo Area */}
+              <div className="w-full flex flex-col items-center">
+                <div className="w-full bg-white rounded-2xl p-4 flex justify-center items-center h-28 border border-slate-100 shadow-xs group-hover:scale-105 transition-transform duration-300">
+                  <OtherLabsLogo className="w-full h-full object-contain max-h-24" />
+                </div>
+
+                <div className="mt-4">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Other Labs</h2>
+                  <p className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wider">
+                    Top Certified Partner Pathology Labs
+                  </p>
+                </div>
+              </div>
+
+              {/* Value Propositions / Key Features */}
+              <div className="w-full bg-white/90 rounded-2xl p-3.5 border border-emerald-100/70 text-left space-y-2 text-xs shadow-xs">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span><strong>Dr. Lal, Metropolis, Pathkind</strong> & more</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Compare prices & book from top brands</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Direct certified lab report delivery</span>
+                </div>
+              </div>
+
+              <div className="w-full flex flex-col items-center gap-3">
+                <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">
+                  <Home className="w-3.5 h-3.5 text-emerald-600" />
+                  Home Collection Available
+                </span>
+
+                <Button 
+                  className="w-full font-bold bg-[#003B73] hover:bg-[#002B54] text-white shadow-md py-3 h-auto text-sm rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNavigate("Other Labs");
+                  }}
+                >
+                  <span>Choose your labs</span>
+                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1.5 transition-transform" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-10 text-center">

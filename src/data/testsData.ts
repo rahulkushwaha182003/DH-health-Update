@@ -216,7 +216,7 @@ export const packages = [
   {
     name: "DH Health Package 1",
     mrp: 7500,
-    price: 1800,
+    price: 1599,
     tests: [
       "Glucose Fasting (BSF) (1)",
       "Haemogram (CBC + ESR) (27)",
@@ -235,7 +235,7 @@ export const packages = [
   {
     name: "DH Health Package 2",
     mrp: 4500,
-    price: 1399,
+    price: 1099,
     tests: [
       "CBC + ESR (26)",
       "Liver Function Test (11)",
@@ -252,7 +252,7 @@ export const packages = [
   {
     name: "DH Health Package 3",
     mrp: 3050,
-    price: 999,
+    price: 799,
     tests: [
       "CBC + ESR (26 Tests)",
       "Liver Function Test (11)",

@@ -11,6 +11,7 @@ import { metropolisTests } from "@/data/metropolisTests";
 import { pathkindTests } from "@/data/pathkindTests";
 import { bharatTests } from "@/data/bharatTests";
 import { diagnosticsHubTests } from "@/data/diagnosticsHubTests";
+import { thyrocareTests } from "@/data/thyrocareTests";
 import { useCart } from "@/context/CartContext";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { generateSlug } from "@/data/testsData";
@@ -100,7 +101,7 @@ export default function DiagnosticsUI() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {partnerLabs.map((lab, index) => {
               const LogoComponent = LabLogos[lab.name as keyof typeof LabLogos] || LabLogos["Other Labs"];
-              const isAvailable = lab.name === "Bharat Lab" || lab.name === "Pathkind Labs" || lab.name === "Metropolis Healthcare" || lab.name === "Dr. Lal PathLabs";
+              const isAvailable = lab.name === "Bharat Lab" || lab.name === "Pathkind Labs" || lab.name === "Metropolis Healthcare" || lab.name === "Thyrocare";
               return (
                 <Card 
                   key={index} 
@@ -211,14 +212,16 @@ export default function DiagnosticsUI() {
     const baseTests = selectedLab === "Diagnostics Hub"
       ? (diagnosticsHubTests as typeof labTests)
       : selectedLab === "Dr. Lal PathLabs"
-        ? (drLalTests as typeof labTests)
+        ? ([] as typeof labTests)
         : selectedLab === "Metropolis Healthcare"
           ? (metropolisTests as typeof labTests)
           : selectedLab === "Pathkind Labs"
             ? (pathkindTests as typeof labTests)
             : selectedLab === "Bharat Lab"
               ? (bharatTests as typeof labTests)
-              : labTests;
+              : selectedLab === "Thyrocare"
+                ? (thyrocareTests as typeof labTests)
+                : labTests;
 
     const activeTests = baseTests.map(test => {
       const normalizedName = test.name.trim().toUpperCase();
@@ -254,7 +257,7 @@ export default function DiagnosticsUI() {
 
     const LogoComponent = LabLogos[selectedLab as keyof typeof LabLogos] || LabLogos["Other Labs"];
 
-    const isCatalogAvailable = selectedLab === "Diagnostics Hub" || selectedLab === "Bharat Lab" || selectedLab === "Pathkind Labs" || selectedLab === "Metropolis Healthcare" || selectedLab === "Dr. Lal PathLabs";
+    const isCatalogAvailable = selectedLab === "Diagnostics Hub" || selectedLab === "Bharat Lab" || selectedLab === "Pathkind Labs" || selectedLab === "Metropolis Healthcare" || selectedLab === "Thyrocare";
 
     return (
       <Layout>
@@ -318,8 +321,8 @@ export default function DiagnosticsUI() {
               <div className="flex overflow-x-auto pb-2 gap-2 mb-6 scrollbar-hide">
                 {[
                   { id: "All", label: "All" },
-                  { id: "Routine & Special", label: "Routine & Special" },
-                  { id: "Health Package", label: "Health Package" }
+                  { id: "Routine & Special", label: selectedLab === "Thyrocare" ? "Profiles" : "Routine & Special" },
+                  { id: "Health Package", label: selectedLab === "Thyrocare" ? "Packages" : "Health Package" }
                 ].filter(cat => {
                   if (cat.id === "All") return true;
                   const count = activeTests.filter(t => t.category === cat.id).length;
@@ -404,7 +407,7 @@ export default function DiagnosticsUI() {
                           </Button>
                         )}
                         <div className="flex items-center gap-3">
-                          <Link to={`/test/${generateSlug(test.name)}?lab=${encodeURIComponent(selectedLab || "")}`} className="text-[13px] font-bold text-[#003B73] hover:text-[#002B54] cursor-pointer">
+                          <Link to={`/test/${generateSlug(test.name)}?lab=${encodeURIComponent(selectedLab || "")}&id=${encodeURIComponent(test.id)}`} className="text-[13px] font-bold text-[#003B73] hover:text-[#002B54] cursor-pointer">
                             Know More
                           </Link>
                         </div>

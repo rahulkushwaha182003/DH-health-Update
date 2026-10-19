@@ -43,7 +43,7 @@ const faqGroups = [
     faqs: [
       {
         question: "How does lab comparison work on Diagnostics Hub?",
-        answer: "Diagnostics Hub is an aggregator platform that lets you compare blood test prices, packages, and credentials from top trusted partner labs such as Dr. Lal PathLabs, Metropolis, Pathkind, and Bharat Lab all in one place."
+        answer: "Diagnostics Hub is an aggregator platform that lets you compare blood test prices, packages, and credentials from top trusted partner labs such as Dr. Lal PathLabs, Metropolis, Pathkind, Bharat Lab, and Thyrocare all in one place."
       },
       {
         question: "Are your partner tests and laboratories accurate and accredited?",

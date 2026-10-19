@@ -12,6 +12,7 @@ import { metropolisTests } from "@/data/metropolisTests";
 import { pathkindTests } from "@/data/pathkindTests";
 import { bharatTests } from "@/data/bharatTests";
 import { diagnosticsHubTests } from "@/data/diagnosticsHubTests";
+import { thyrocareTests } from "@/data/thyrocareTests";
 import { formatINR, generateSlug, tests as genericTests, packages } from "@/data/testsData";
 import { useCart } from "@/context/CartContext";
 
@@ -41,28 +42,39 @@ const TestDetailPage = () => {
   const [selectedTestToRemove, setSelectedTestToRemove] = useState<{ id: string; name: string } | null>(null);
 
   const selectedLab = searchParams.get("lab");
+  const testId = searchParams.get("id");
 
   let test: any = null;
   let isPackage = false;
 
+  const findInList = (list: any[]) => {
+    if (testId) {
+      const match = list.find(t => t.id === testId);
+      if (match) return match;
+    }
+    return list.find(t => generateSlug(t.name) === testSlug);
+  };
+
   if (selectedLab === "Diagnostics Hub") {
-    test = diagnosticsHubTests.find(t => generateSlug(t.name) === testSlug);
+    test = findInList(diagnosticsHubTests);
   } else if (selectedLab === "Dr. Lal PathLabs") {
-    test = drLalTests.find(t => generateSlug(t.name) === testSlug);
+    test = null;
   } else if (selectedLab === "Metropolis Healthcare") {
-    test = metropolisTests.find(t => generateSlug(t.name) === testSlug);
+    test = findInList(metropolisTests);
   } else if (selectedLab === "Pathkind Labs") {
-    test = pathkindTests.find(t => generateSlug(t.name) === testSlug);
+    test = findInList(pathkindTests);
   } else if (selectedLab === "Bharat Lab") {
-    test = bharatTests.find(t => generateSlug(t.name) === testSlug);
+    test = findInList(bharatTests);
+  } else if (selectedLab === "Thyrocare") {
+    test = findInList(thyrocareTests);
   } else {
-    test = diagnosticsHubTests.find(t => generateSlug(t.name) === testSlug);
-    if (!test) {
-      test = labTests.find(t => generateSlug(t.name) === testSlug);
-    }
-    if (!test) {
-      test = genericTests.find(t => generateSlug(t.name) === testSlug);
-    }
+    test = findInList(diagnosticsHubTests) ||
+           findInList(thyrocareTests) ||
+           findInList(bharatTests) ||
+           findInList(metropolisTests) ||
+           findInList(pathkindTests) ||
+           findInList(labTests) ||
+           findInList(genericTests);
     if (!test) {
       test = packages.find(p => generateSlug(p.name) === testSlug);
       isPackage = !!test;

@@ -118,7 +118,7 @@ const AboutPage = () => {
               </p>
               <p className="text-muted-foreground mb-4">
                 Our platform enables individuals and families to compare blood test prices, choose from certified 
-                partner laboratories such as Bharat Lab, Pathkind, Metropolis, and Dr. Lal PathLabs, and book doorstep 
+                partner laboratories such as Bharat Lab, Pathkind, Metropolis, Dr. Lal PathLabs, and Thyrocare, and book doorstep 
                 sample collection at their preferred time.
               </p>
               <p className="text-muted-foreground mb-6">
